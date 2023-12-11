@@ -1,0 +1,16 @@
+{
+  "name": "get-api-call_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@architect/functions": "^7.0.0",
+    "axios": "^1.6.0",
+    "qs": "^6.11.2"
+  }
+}

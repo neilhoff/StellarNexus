@@ -1,0 +1,11 @@
+.DS_Store
+thumbs.db
+*.log
+node_modules/
+/public/*
+
+/Old
+.arc-env
+
+cypress.env.json
+preferences.arc

@@ -1,0 +1,816 @@
+[
+  {
+    "pk": "2023-Analytics",
+    "sk": 2023166,
+    "analytics": [
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "stellarnexus@1blpb6.onmicrosoft.com",
+        "displayName": "Neil Hoff",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "",
+        "fromUrl": "/",
+        "userPrincipalName": "notLoggedIn",
+        "displayName": "Not Logged In",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/admin/analytics",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      },
+      {
+        "skyLogType": "Analytics",
+        "skyLogDescription": "RouterLink",
+        "toUrl": "/admin/analytics",
+        "referrer": "http://localhost:8080/",
+        "fromUrl": "/",
+        "userPrincipalName": "AdeleV@1blpb6.onmicrosoft.com",
+        "displayName": "Adele Vance",
+        "userAgent": {
+          "browser": {
+            "name": "Microsoft Edge",
+            "version": "114.0.1823.43"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "NT 10.0",
+            "versionName": "10"
+          },
+          "platform": {
+            "type": "desktop"
+          },
+          "engine": {
+            "name": "Blink"
+          }
+        }
+      }
+    ],
+    "dateOfAnalytics": "2023-06-15",
+    "dayCount": 31
+  }
+]

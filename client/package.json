@@ -1,0 +1,57 @@
+{
+  "name": "client",
+  "version": "0.0.1",
+  "description": "",
+  "productName": "Stellar Nexus",
+  "author": "Neil Hoff <neilhoff@protonmail.com>",
+  "private": true,
+  "scripts": {
+    "lint": "eslint --ext .js,.vue ./",
+    "buildStaging": "SET NODE_ENV=staging&&quasar build",
+    "buildProduction": "SET NODE_ENV=production&&quasar build"
+  },
+  "dependencies": {
+    "@azure/msal-browser": "^3.0.2",
+    "@quasar/extras": "^1.16.4",
+    "apexcharts": "^3.42.0",
+    "axios": "^1.4.0",
+    "core-js": "^3.6.5",
+    "highlight.js": "^11.8.0",
+    "qs": "^6.10.3",
+    "quasar": "^2.6.0",
+    "serialize-error": "^11.0.2",
+    "vue": "^3.3.4",
+    "vue-router": "^4.0.0",
+    "vue3-apexcharts": "^1.4.4",
+    "vuex": "^4.0.1",
+    "vuex-persist": "^3.1.3"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.13.14",
+    "@quasar/app-webpack": "^3.0.0",
+    "dotenv-flow": "^3.2.0",
+    "eslint": "^8.10.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.19.1",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-vue": "^9.0.0",
+    "eslint-webpack-plugin": "^3.1.1"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": ">= 12.22.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
+}
