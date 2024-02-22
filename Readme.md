@@ -22,8 +22,10 @@ a full-stack application. Follow the "New Project Steps" below to setup a new si
     - Click on `API Permissions` and setup the required permissions and grant Admin access
     - Change `client/src/services/auth/AuthService.js`
         - clientID
-- Change `/client/.env`
+- Copy `/client/.env-template` to `/client/.env` and update
     - `APP_NAME` to the name of the project
+    - `AZURE_CLIENT_ID`
+    - `AZURE_AUTHORITY_URL`
 - Setup AD group for Admin access
     - Update `client/.env`
         - `GLOBAL_ADMIN_GROUP` and `SITE_ADMIN_GROUP`
