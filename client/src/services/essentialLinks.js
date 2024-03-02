@@ -4,7 +4,7 @@ export const essentialLinks = {
       title: 'Home',
       icon: 'fas fa-home',
       link: {
-        location: '/',
+        location: '/app',
         internal: true
       }
     },

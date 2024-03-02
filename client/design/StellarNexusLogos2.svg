@@ -25,8 +25,8 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="1.0570195"
-     inkscape:cx="260.1655"
-     inkscape:cy="548.23966"
+     inkscape:cx="-201.98303"
+     inkscape:cy="-228.47261"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="-8"
@@ -34,7 +34,16 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1" />
   <defs
-     id="defs1" />
+     id="defs1">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath11">
+      <path
+         style="fill:#ffffea;fill-opacity:0.65449;stroke-width:1.83;stroke-linecap:round;paint-order:fill markers stroke"
+         d="M -84.104402,-93.115591 H 9.2615073 v 35.794432 H -84.104402 Z"
+         id="path11" />
+    </clipPath>
+  </defs>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
@@ -120,7 +129,7 @@
        id="circle9"
        style="fill:#4d4d4d;fill-opacity:1;stroke:#00cecb;stroke-width:3.51147;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
        d="m 39.371215,195.32155 c 8.315791,22.5071 35.71816,35.69503 58.469736,27.97667 21.941279,-6.54991 37.133339,-30.77444 32.645169,-53.37231 -3.42916,-21.44906 -23.21145,-39.33918 -45.116548,-39.52877 -20.070687,-0.93862 -40.313011,12.22806 -46.462574,31.57011 -3.856176,10.68525 -3.790241,22.79399 0.464205,33.35429 z"
-       inkscape:export-filename="..\public\drawer-logo-dark-mode.png"
+       inkscape:export-filename="StellarNexusLogo.svg"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96" />
     <path
@@ -184,6 +193,105 @@
        id="circle16"
        cx="100.00619"
        cy="207.03673"
+       r="3.185272" />
+    <path
+       id="path4"
+       style="fill:#4d4d4d;fill-opacity:1;stroke:#00cecb;stroke-width:3.51147;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       d="m -151.61588,100.20347 c 8.3158,22.5071 35.71816,35.69503 58.469736,27.97667 21.941279,-6.54991 37.133339,-30.774441 32.645169,-53.372311 -3.42916,-21.44906 -23.21145,-39.33918 -45.116545,-39.52877 -20.07069,-0.93862 -40.31301,12.22806 -46.46257,31.57011 -3.85618,10.68525 -3.79024,22.79399 0.4642,33.354291 z"
+       inkscape:export-filename="..\src\assets\StellarNexusLogo2.svg"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <path
+       id="path10"
+       style="fill:none;stroke-width:1.22969;paint-order:markers fill stroke"
+       d="m -78.663745,142.53204 a 37.827952,37.827952 0 0 1 45.578135,28.00968 37.827952,37.827952 0 0 1 -28.009679,45.57814 37.827952,37.827952 0 0 1 -45.578131,-28.00969 37.827952,37.827952 0 0 1 28.009675,-45.57813 z" />
+    <g
+       id="g16"
+       transform="matrix(2.5795966,0,0,2.5795966,-333.66181,-17.340317)">
+      <path
+         id="path15"
+         style="fill:#ff5e5b;fill-opacity:1;stroke:none;stroke-width:0.284446;paint-order:markers fill stroke"
+         d="m 95.625611,69.841675 a 9.021903,9.021903 0 0 0 -2.032438,5.678206 9.021903,9.021903 0 0 0 9.022187,9.022188 9.021903,9.021903 0 0 0 7.43055,-3.93206 z" />
+      <ellipse
+         style="fill:#ffed66;fill-opacity:1;stroke:#d4aa00;stroke-width:0.534001;stroke-opacity:1;-inkscape-stroke:none"
+         id="ellipse15"
+         cx="127.43979"
+         cy="-1.105405"
+         rx="14.716801"
+         ry="2.5887241"
+         transform="matrix(0.80125226,0.59832668,-0.61465243,0.78879807,0,0)" />
+      <path
+         id="path16"
+         style="fill:#ff5e5b;fill-opacity:1;stroke:none;stroke-width:0.284446;paint-order:markers fill stroke"
+         d="m 95.625611,69.841675 14.420299,10.768334 a 9.021903,9.021903 0 0 0 1.59112,-5.090128 9.021903,9.021903 0 0 0 -9.02167,-9.021672 9.021903,9.021903 0 0 0 -6.989749,3.343466 z" />
+    </g>
+    <circle
+       style="fill:#ffffea;fill-opacity:1;stroke:none;stroke-width:3.51147;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="circle17"
+       cx="-102.9917"
+       cy="172.71037"
+       r="3.185272" />
+    <circle
+       style="fill:#ffffea;fill-opacity:1;stroke:none;stroke-width:3.51147;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="circle18"
+       cx="-64.302307"
+       cy="169.42662"
+       r="3.185272" />
+    <circle
+       style="fill:#ffffea;fill-opacity:1;stroke:none;stroke-width:3.51147;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="circle19"
+       cx="-52.182743"
+       cy="207.03673"
+       r="3.185272" />
+    <path
+       id="path10-0"
+       style="fill:none;stroke-width:1.22969;paint-order:markers fill stroke"
+       d="m -76.525025,-117.49928 a 37.827952,37.827952 0 0 1 45.578135,28.00968 37.827952,37.827952 0 0 1 -28.009679,45.57814 37.827952,37.827952 0 0 1 -45.578131,-28.00969 37.827952,37.827952 0 0 1 28.009675,-45.57813 z" />
+    <g
+       id="g11"
+       transform="translate(-10.763362,-43.80438)"
+       clip-path="url(#clipPath11)"
+       inkscape:export-filename="..\src\assets\StellarNexusClipped.svg"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96">
+      <g
+         id="g16-4"
+         transform="matrix(2.5795966,0,0,2.5795966,-305.24046,-255.09397)">
+        <path
+           id="path15-5"
+           style="fill:#ff5e5b;fill-opacity:1;stroke:none;stroke-width:0.284446;paint-order:markers fill stroke"
+           d="m 95.625611,69.841675 a 9.021903,9.021903 0 0 0 -2.032438,5.678206 9.021903,9.021903 0 0 0 9.022187,9.022188 9.021903,9.021903 0 0 0 7.43055,-3.93206 z" />
+        <ellipse
+           style="fill:#ffed66;fill-opacity:1;stroke:#d4aa00;stroke-width:0.534001;stroke-opacity:1;-inkscape-stroke:none"
+           id="ellipse15-3"
+           cx="127.43979"
+           cy="-1.105405"
+           rx="14.716801"
+           ry="2.5887241"
+           transform="matrix(0.80125226,0.59832668,-0.61465243,0.78879807,0,0)" />
+        <path
+           id="path16-3"
+           style="fill:#ff5e5b;fill-opacity:1;stroke:none;stroke-width:0.284446;paint-order:markers fill stroke"
+           d="m 95.625611,69.841675 14.420299,10.768334 a 9.021903,9.021903 0 0 0 1.59112,-5.090128 9.021903,9.021903 0 0 0 -9.02167,-9.021672 9.021903,9.021903 0 0 0 -6.989749,3.343466 z" />
+      </g>
+    </g>
+    <circle
+       style="fill:#ffffea;fill-opacity:1;stroke:none;stroke-width:3.51147;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="circle17-7"
+       cx="-163.68098"
+       cy="-59.786766"
+       r="3.185272" />
+    <circle
+       style="fill:#ffffea;fill-opacity:1;stroke:none;stroke-width:3.51147;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="circle18-1"
+       cx="-124.99158"
+       cy="-63.070518"
+       r="3.185272" />
+    <circle
+       style="fill:#ffffea;fill-opacity:1;stroke:none;stroke-width:3.51147;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="circle19-1"
+       cx="-112.87202"
+       cy="-25.460409"
        r="3.185272" />
   </g>
 </svg>

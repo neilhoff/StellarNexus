@@ -75,7 +75,7 @@ import { useQuasar } from 'quasar'
 import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
-  name: 'MainLayout',
+  name: 'ProtectedLayout',
   components: {
     EssentialLink,
     AvatarWithMenu

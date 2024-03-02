@@ -41,11 +41,11 @@
 import { defineComponent, computed } from 'vue'
 import { useStore } from 'vuex'
 import EssentialCard from 'components/EssentialCard'
-import { essentialLinks } from '../services/essentialLinks'
+import { essentialLinks } from 'src/services/essentialLinks'
 import PageHeader from 'components/PageHeader'
 
 export default defineComponent({
-  name: 'PageIndex',
+  name: 'ProtectedIndex',
   components: {
     PageHeader,
     EssentialCard
