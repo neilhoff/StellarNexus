@@ -4,11 +4,12 @@ import VuexPersist from 'vuex-persist'
 
 import auth from './auth'
 import config from './config'
+import web3 from './web3'
 
 const vuexLocalStorage = new VuexPersist({
   key: process.env.APP_NAME, // The key to store the state on in the storage provider.
   storage: window.localStorage, // or window.sessionStorage or localForage
-  modules: ['auth', 'config']
+  modules: ['auth', 'config', 'web3']
 })
 
 /*
@@ -25,7 +26,8 @@ export default store(function (/* { ssrContext } */) {
     plugins: [vuexLocalStorage.plugin],
     modules: {
       auth,
-      config
+      config,
+      web3
     },
 
     // enable strict mode (adds overhead!)

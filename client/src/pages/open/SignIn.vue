@@ -38,6 +38,13 @@
               />
               Continue with Microsoft
             </q-btn>
+            <q-btn
+              flat
+              no-caps
+            >
+              />
+              Sign-in with a Bitcoin Wallet
+            </q-btn>
 
           </q-card-actions>
         </q-card-section>

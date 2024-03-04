@@ -19,6 +19,7 @@
             icon="fab fa-github"
             round
           />
+          <BitcoinSignIn />
         </q-toolbar>
       </q-header>
       <router-view />
@@ -40,10 +41,12 @@
 <script>
 
 import { defineComponent } from 'vue'
+import BitcoinSignIn from 'pages/open/web3/BitcoinSignIn'
 
 export default defineComponent({
   name: 'OpenLayout',
   components: {
+    BitcoinSignIn
   },
   setup () {
     return {
