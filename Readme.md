@@ -1,17 +1,18 @@
 ![Logo of the project](logo.png)
 
-# StellarNexus: Full-Stack Serverless Template 
+# StellarNexus: Full-Stack Serverless Template
 
-Powered by [Quasar](https://quasar.dev) as the front-end and [Architect](https://arc.codes) as a serverless backend, StellarNexus aims to make it easy for developers to start building 
+Powered by [Quasar](https://quasar.dev) as the front-end and [Architect](https://arc.codes) as a serverless backend, StellarNexus aims to make it easy for developers to start building
 a full-stack application. Follow the "New Project Steps" below to setup a new site.
 
-## New Project Steps: 
+## New Project Steps:
 
 - Fork this project
+  - To fork into a private repo do a [bare clone & mirror push](https://stackoverflow.com/a/16554601/756623)
 - Change `app.arc`
     - @app
 - Change `package.json`
-    - name 
+    - name
     - description
 - Change `/client/package.json`
     - productName
@@ -45,6 +46,7 @@ $ git fetch upstream
 $ git checkout master
 $ git merge upstream/master
 ```
+
 ## Upgrade to the Latest Versions of Quasar and Architect
 
 - This should be done at the Template and pulled to forked projects
@@ -81,8 +83,8 @@ aws_access_key_id=xxx
 aws_secret_access_key=xxx
 ```
 
-- Install Quasar, Architect and AWS CLI globally
-    - `npm i -g @architect/architect aws-sdk @quasar/cli`
+- Install Quasar, Quasar Icon Genie, Architect and AWS CLI globally
+    - `npm i -g @architect/architect aws-sdk @quasar/cli @quasar/icongenie`
 - Install dependencies:
     - Run `npm install` from the root of the project
     - Run `npm init @architect` from the root of the project
@@ -91,8 +93,11 @@ aws_secret_access_key=xxx
   	- Run `npm install` in the `client` folder
 - Start the client and server for development
     - From the root folder: `npm start`
- - Client is located at http://localhost:8080
- - Server is located at http://localhost:3333
+- Client is located at http://localhost:8080
+- Server is located at http://localhost:3333
+- Use Icon Genie to create the favicon icons
+    - `icongenie generate -i /path/to/icon.png`
+    - This will automatically put the icons into the `client/public` folder
 
  ### Architect Environment Variables
 
@@ -104,9 +109,9 @@ aws_secret_access_key=xxx
     - Example: `Feature: Add awesome new feature`
         - Start with a type
         - Present tense
-    - Types used for this project: 
-        - `Feature:` 
-        - `Fix:` 
+    - Types used for this project:
+        - `Feature:`
+        - `Fix:`
         - `Chore:`
         - `Test:`
         - `Refactor:`
@@ -122,9 +127,10 @@ aws_secret_access_key=xxx
     - Back end
         - Microsoft Graph rest api
 - Steps
-    - The user signs in (MSAL) and is given access to the admin layout 
+    - The user signs in (MSAL) and is given access to the admin layout
     - When the user requests something from Architect the front-end requests a bearer token (MSAL) and sends it to the Architect api as an authentication header
     - The Architect api verifies the token is valid by connecting to the Microsoft Graph
+
 ## Testing
 
 - We use the End-to-End testing framework [Cypress](https://www.cypress.io/)
@@ -151,7 +157,7 @@ aws_secret_access_key=xxx
 
  - Create a user in IAM
     - Go to the [Aws Console](https://console.aws.amazon.com) and navigate to the IAM Service
-    - Create a user for yourself and give it `AdministratorAccess` 
+    - Create a user for yourself and give it `AdministratorAccess`
     - Click on the `Security credentials` tab
     - Create a new Access key and make sure to save the secret access key
  - You need to setup credentials c:/users/username/.aws/credentials
@@ -175,7 +181,7 @@ aws_secret_access_key=xxx
 
 ### Setup Environment Variables for Staging and Production
 
-- Quasar Client 
+- Quasar Client
     - Go to `client/src` and add environment variables to *.env.staging* and *.env.production*
 - Architect Serverless
     - Read `ArchitectExampleVariables.md` for list of variables needed

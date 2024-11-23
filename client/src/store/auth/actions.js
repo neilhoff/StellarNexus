@@ -4,7 +4,9 @@ import { AccessRules } from 'src/services/auth/AccessRules'
 import { Loading, date } from 'quasar'
 import store from 'src/store/index.js'
 
-AuthService.userAgentApp.handleRedirectPromise().then(async (tokenResponse) => {
+const msalUserAgentApp = await AuthService.msalAuth.initialize()
+
+msalUserAgentApp.handleRedirectPromise().then(async (tokenResponse) => {
   if (tokenResponse !== null) {
     Loading.show({
       message: 'Signing in. Please wait...',
@@ -15,13 +17,15 @@ AuthService.userAgentApp.handleRedirectPromise().then(async (tokenResponse) => {
     await store().dispatch('auth/setUserInfo')
     try {
       await store().dispatch('auth/setAdminAccess')
-      await store().dispatch('auth/getUserPhoto')
+      await store().dispatch('auth/getUserPhoto') // This needs to be last because it can fail
     } finally {
       // TODO: I cannot get vue to reactively respond to changes that are made in AuthService so I need to reload the page
       // Loading.hide() hides the loading for a second or two before the location.reload() is activated
       //  - Removing it is a much better user experience and loading is hidden on page reload
       // location.reload()
-      location.href = '/'
+      console.log('locatino.href=', location.href)
+      Loading.hide()
+      location.href = `${process.env.MSAL_REDIRECT_URI}/#/app`
     }
   }
 }).catch((error) => {
@@ -29,9 +33,10 @@ AuthService.userAgentApp.handleRedirectPromise().then(async (tokenResponse) => {
 })
 
 export function login (context) {
+  console.log(AuthService.msalAuth.loginConfig)
   Loading.show()
   try {
-    AuthService.userAgentApp.loginRedirect(AuthService.loginConfig)
+    msalUserAgentApp.loginRedirect(AuthService.msalAuth.loginConfig)
   } finally {
     Loading.hide()
   }
@@ -41,21 +46,21 @@ export async function logout (context) {
   Loading.show()
   try {
     window.localStorage.removeItem(process.env.APP_NAME)
-    await AuthService.userAgentApp.logoutRedirect()
+    await msalUserAgentApp.logoutRedirect()
   } finally {
     Loading.hide()
   }
 }
 
 export async function getToken () {
-  const currentAccounts = AuthService.userAgentApp.getAllAccounts()
+  const currentAccounts = msalUserAgentApp.getAllAccounts()
   const tokenRequest = {
-    scopes: AuthService.loginConfig.scopes,
+    scopes: AuthService.msalAuth.loginConfig.scopes,
     account: currentAccounts[0]
   }
   if (currentAccounts.length > 0) {
     try {
-      return await AuthService.userAgentApp.acquireTokenSilent(tokenRequest)
+      return await msalUserAgentApp.acquireTokenSilent(tokenRequest)
     } catch (error) {
       console.log(error)
       console.log(error.errorCode, error.name, error.errorMessage)
@@ -78,7 +83,7 @@ export async function getToken () {
 }
 
 export function getAccount (context) {
-  return AuthService.userAgentApp.getAllAccounts()
+  return msalUserAgentApp.getAllAccounts()
 }
 
 export async function getUserPhoto (context, size = '48x48') {

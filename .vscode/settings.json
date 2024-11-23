@@ -92,6 +92,7 @@
   ],
   "editor.tabSize": 2,
   "[markdown]": {
-    "editor.wordWrap": "off"
+    "editor.wordWrap": "off",
+    "editor.cursorSurroundingLines": 0
   }
 }
