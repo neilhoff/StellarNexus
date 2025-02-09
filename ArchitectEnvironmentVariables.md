@@ -15,6 +15,7 @@
  
 arc env -e testing --add ARC_SESSION_TABLE_NAME sessions
 arc env -e testing --add ARC_APP_SECRET <use: "openssl rand -base64 32" to generate a strong secret>
+arc env -e testing --add CORS_ORIGIN http://localhost:8080
 
 ````
 

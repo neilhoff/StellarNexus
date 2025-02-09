@@ -1,4 +1,4 @@
-import store from 'src/store/index'
+// import store from 'src/store/index'
 import axios from 'axios'
 
 function ServiceException (name, message, stack) {
@@ -14,14 +14,55 @@ const tokenError = (error) => {
 const timeoutError = (stack, extraMessage = '') => {
   throw new ServiceHelpers.ServiceException('TimeOutError', `The server returned a timeout error. ${extraMessage}`, stack)
 }
+function handleError (error, serviceErrorObj) {
+  console.log(error, error.response)
+  let errorMessage
+  if (error.response && error.response.data && error.response.data.message) {
+    errorMessage = `${error.response.status} - ${error.response.data.message}`
+  } else if (error.response) {
+    errorMessage = `${error.response.status} - ${error.response.statusText}`
+  } else {
+    errorMessage = `${error.code} - ${error.message}`
+  }
+  console.log('ERROR MESSAGE', errorMessage, typeof errorMessage)
+  throw new ServiceHelpers.ServiceException(
+    serviceErrorObj.title,
+    `<div style="font-size: 1.1rem; font-weight: bold;">${serviceErrorObj.description}</div>
+      <div style="font-size: .7rem; margin-bottom: 5px;">${new Date()}</div>
+      ${errorMessage.substring(0, 500)}`,
+    errorMessage
+  )
+}
+async function postToApi (url, params, serviceErrorObj) {
+  // const token = await store().dispatch('auth/getToken')
+  try {
+    // axios.defaults.withCredentials = true
+    const response = await axios.post(url, { ...params }, {
+      withCredentials: true
+      // headers: {
+      //   // authorization: 'Bearer ' + token.accessToken
+      // }
+    })
+    console.log('response', response)
+    console.log('response headers', response.headers)
+    // Error Checking
+    if (typeof response.data === 'string' && response.data.startsWith('<h1>Timeout Error</h1>')) {
+      timeoutError(response.data, 'Timeout Error')
+    }
+    return response.data
+  } catch (error) {
+    handleError(error, serviceErrorObj)
+  }
+}
 
-async function getFromApi (url, params, tableInfo, serviceErrorObj) {
-  const token = await store().dispatch('auth/getToken')
+async function getFromApi (url, params, serviceErrorObj) {
+  // const token = await store().dispatch('auth/getToken')
   try {
     const response = await axios.get(url, {
-      headers: {
-        authorization: 'Bearer ' + token.accessToken
-      },
+      withCredentials: true,
+      // headers: {
+      //   authorization: 'Bearer ' + token.accessToken
+      // },
       params: {
         params
       }
@@ -30,39 +71,9 @@ async function getFromApi (url, params, tableInfo, serviceErrorObj) {
     if (typeof response.data === 'string' && response.data.startsWith('<h1>Timeout Error</h1>')) {
       timeoutError(response.data, 'Please Try a smaller date range')
     }
-    // Add Table info
-    if (tableInfo) {
-      if (typeof tableInfo === 'object') {
-        for (const key in tableInfo) {
-          response.data[key] = tableInfo[key]
-        }
-      } else { // backwards compatible
-        response.data.columns = tableInfo
-      }
-    }
     return response.data
   } catch (error) {
-    if (error.name === 'TimeOutError') {
-      throw error
-    } else {
-      let errorMessage
-      if (error.response) {
-        if (error.response.data.includes('HTTP 401 - Unauthorized')) {
-          errorMessage = 'HTTP 401 - Unauthorized: The SAP service account has an issue'
-        } else {
-          errorMessage = error.response.data
-        }
-      } else {
-        errorMessage = error.message
-      }
-      throw new ServiceHelpers.ServiceException(
-        serviceErrorObj.title,
-        `<div style="font-size: 1.1rem; font-weight: bold;">${serviceErrorObj.description}</div>
-         <div style="font-size: .7rem; margin-bottom: 5px;">${new Date()}</div>
-         ${errorMessage.substring(0, 500)}`,
-        errorMessage
-      )
-    }
+    handleError(error, serviceErrorObj)
   }
 }
 
@@ -76,6 +87,7 @@ const ServiceHelpers = {
   ServiceException,
   tokenError,
   timeoutError,
+  postToApi,
   getFromApi,
   sortDateString
 }

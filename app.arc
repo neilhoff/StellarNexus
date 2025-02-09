@@ -10,6 +10,7 @@ runtime nodejs18.x
   post /api/sign-up
   post /api/sign-in
   post /api/sign-out
+  get /api/auth-check
 
   get /api/skylogs
   post /api/skylogs

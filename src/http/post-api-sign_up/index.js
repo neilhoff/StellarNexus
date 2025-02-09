@@ -1,12 +1,11 @@
 const arc = require('@architect/functions')
-// var passport = require('passport')
-// var LocalStrategy = require('passport-local')
 const bcrypt = require('bcrypt')
+const { createErrorInstance, createReturnError } = require('@architect/shared/serverErrors')
 
 
 async function signUp (req, context) {
   let { session } = req
-  console.log('session', session)
+  console.log('session', session.user)
   // Setup bcrypt
   const saltRounds = 10
   const salt = bcrypt.genSaltSync(saltRounds)
@@ -14,42 +13,59 @@ async function signUp (req, context) {
   // Setup the Database
   let db = await arc.tables()
   let usersTable = db.users
+  console.log(usersTable)
+  console.log(req.body)
 
-  let newUserTest = await usersTable.get({ username: req.body.username })
-  let result, statusCode, user
+  let newUserTest = await usersTable.get({ username: req.body.email })
+  let result, user
   if (newUserTest) {
     console.log('User already created')
-    result = {
-      message: 'User already created'
+    const errorInstance = createErrorInstance('UserAlreadyCreated', 'User has already been created.', 409)
+    const returnObj = createReturnError(errorInstance)
+    console.log(returnObj)
+    return {
+      ...returnObj
     }
-    statusCode = 409
   } else {
     const passwordHash = bcrypt.hashSync(req.body.password, salt)
+    console.log('Password Hash!', passwordHash)
     try {
-      const userSave = await usersTable.put({
-        username: req.body.username,
-        passwordHash
+      user = await usersTable.put({
+        username: req.body.email,
+        passwordHash,
+        email: req.body.email,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName
       })
-      user = { username: userSave.username }
+      // user = { username: userSave.username }
+      // result = {
+      //   username: userSave.username,
+      //   message: 'User created successfully!'
+      // }
+      console.log('USERSAVE====', user)
+      const allUsers = await usersTable.scan()
+      console.log(allUsers)
       result = {
-        username: userSave.username,
-        message: 'User created successfully!'
+        username: user.username,
+        message: 'User was created Successfully!'
       }
-      statusCode = 200
+      console.log('RESULT======', result)
     } catch (error) {
-      result = {
-        message: 'There was an error creating the user' + error
+      console.log(error)
+      const returnObj = createReturnError(error)
+      return {
+        ...returnObj
       }
-      statusCode = 500
     }
-
   }
-
   return {
     session: { user },
     body: JSON.stringify(result),
-    cors: true,
-    statusCode: statusCode
+    headers: {
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Origin': process.env.CORS_ORIGIN
+    },
+    statusCode: 200
   }
 
 }

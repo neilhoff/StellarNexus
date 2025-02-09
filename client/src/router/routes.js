@@ -3,14 +3,15 @@ const routes = [
     path: '/',
     component: () => import('layouts/OpenLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/open/Index.vue') }
+      { path: '', component: () => import('pages/open/Index.vue'), name: 'SiteHome' }
     ]
   },
   {
     path: '/',
     component: () => import('layouts/SimpleLayout.vue'),
     children: [
-      { path: '/sign-in', component: () => import('pages/open/SignIn.vue') }
+      { path: '/sign-in', component: () => import('pages/open/SignIn.vue') },
+      { path: '/sign-up', component: () => import('pages/open/SignUp.vue') }
     ]
   },
   {

@@ -1,10 +1,10 @@
-import { AuthService } from 'src/services/auth/AuthService'
+import { msalAuth } from 'src/services/auth/AuthService'
 import { GraphService } from 'src/services/auth/GraphService'
 import { AccessRules } from 'src/services/auth/AccessRules'
 import { Loading, date } from 'quasar'
 import store from 'src/store/index.js'
 
-const msalUserAgentApp = await AuthService.msalAuth.initialize()
+const msalUserAgentApp = await msalAuth.initialize()
 
 msalUserAgentApp.handleRedirectPromise().then(async (tokenResponse) => {
   if (tokenResponse !== null) {
@@ -33,10 +33,10 @@ msalUserAgentApp.handleRedirectPromise().then(async (tokenResponse) => {
 })
 
 export function login (context) {
-  console.log(AuthService.msalAuth.loginConfig)
+  console.log(msalAuth.loginConfig)
   Loading.show()
   try {
-    msalUserAgentApp.loginRedirect(AuthService.msalAuth.loginConfig)
+    msalUserAgentApp.loginRedirect(msalAuth.loginConfig)
   } finally {
     Loading.hide()
   }
@@ -55,7 +55,7 @@ export async function logout (context) {
 export async function getToken () {
   const currentAccounts = msalUserAgentApp.getAllAccounts()
   const tokenRequest = {
-    scopes: AuthService.msalAuth.loginConfig.scopes,
+    scopes: msalAuth.loginConfig.scopes,
     account: currentAccounts[0]
   }
   if (currentAccounts.length > 0) {

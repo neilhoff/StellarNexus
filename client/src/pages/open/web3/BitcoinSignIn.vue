@@ -5,7 +5,10 @@
     no-caps
     v-if="!store.state.web3.signedIn"
   >
-    Sign-in with a Bitcoin Wallet
+    <q-img
+      class="wallet-logo q-mr-sm"
+      :src="walletIcon"
+    /> Sign-in with a Bitcoin Wallet
   </q-btn>
   <div v-else>
     <q-chip
@@ -26,6 +29,7 @@
 import { defineComponent, computed } from 'vue'
 import { useStore } from 'vuex'
 import { getAddress } from 'sats-connect'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'BitcoinSignIn',
@@ -33,10 +37,15 @@ export default defineComponent({
     walletTypes: {
       type: Array,
       default: () => ['ordinals', 'payment', 'stacks']
+    },
+    navigateToAfterSignIn: {
+      type: String,
+      default: null
     }
   },
-  setup ({ walletTypes }) {
+  setup ({ walletTypes, navigateToAfterSignIn }) {
     const store = useStore()
+    const router = useRouter()
     const getAddressOptions = {
       payload: {
         purposes: walletTypes,
@@ -52,6 +61,9 @@ export default defineComponent({
     }
     async function bitcoinSignIn () {
       await getAddress(getAddressOptions)
+      if (navigateToAfterSignIn) {
+        router.push({ name: 'SiteHome' })
+      }
     }
     const walletCommits = { ordinals: 'setOrdinalsAddress', payment: 'setBtcPaymentAddress', stacks: 'setStacksAddress' }
     function saveAddresses (addresses) {
@@ -96,7 +108,7 @@ export default defineComponent({
       } else if (s.stacksAddress) {
         return require('src/assets/web3/stacks-logo.svg')
       } else {
-        return ''
+        return require('src/assets/web3/bitcoin-circle.svg')
       }
     })
 

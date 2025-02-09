@@ -123,7 +123,7 @@ import { defineComponent, computed } from 'vue'
 import { useQuasar } from 'quasar'
 
 export default defineComponent({
-  name: 'PageIndex',
+  name: 'SiteHome',
   components: {
 
   },
