@@ -1,9 +1,17 @@
 const routes = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => import('layouts/PublicLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/IndexPage.vue') }
+      { path: '', component: () => import('pages/public/SiteHome.vue') }
+    ]
+  },
+  {
+    path: '/protected',
+    component: () => import('layouts/ProtectedLayout.vue'),
+    children: [
+      { path: '/protected', component: () => import('pages/protected/IndexPage.vue') },
+      { path: '/protected/call-rest-api', component: () => import('pages/protected/callRestApi/CallRestApi.vue') }
     ]
   },
 
@@ -11,7 +19,7 @@ const routes = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue')
+    component: () => import('pages/public/ErrorNotFound.vue')
   }
 ]
 

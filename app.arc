@@ -2,7 +2,7 @@
 stellar_nexus
 
 @http
-get /
+get /api/call-api
 
 options /api/*
 
