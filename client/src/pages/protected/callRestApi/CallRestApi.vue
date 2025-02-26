@@ -67,6 +67,39 @@
         :tableShow="rows.length > 0"
         @updateRows="setTableRows"
       >
+        <template v-slot:header-cell="props">
+          <q-th class="text-left">
+
+            {{ props.col.label }}
+            <q-chip
+              class="col"
+              @click="columnTypeClick(props.col.label)"
+              clickable
+              label="Type"
+              size="sm"
+            >
+              <q-menu
+                v-model="columnTypeMenu[props.col.label]"
+                auto-close
+                anchor="bottom right"
+                self="top right"
+              >
+                <q-list dense>
+                  <q-item
+                    @click="updateColumnFormat(props.col, type)"
+                    clickable
+                    :key="type"
+                    v-close-popup
+                    v-for="type of columnTypeOptions"
+                  >
+                    <q-item-section>{{ type }}</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-chip>
+          </q-th>
+
+        </template>
         <template v-slot:body-cell="props">
           <q-td :props="props">
             <div v-if="isImage(props.value)">
@@ -75,8 +108,10 @@
                 style="height: 50px;"
               >
             </div>
-            <div v-else>
-              {{ props.value }}
+            <div
+              v-else
+              v-html="displayWithColumnFormat(props.col, props.value)"
+            >
             </div>
           </q-td>
         </template>
@@ -86,7 +121,7 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, reactive, ref } from 'vue'
 import PageHeader from 'src/components/PageHeader.vue'
 import { callRestApiService } from 'src/services/protected/callRestApi/callRestApiService.js'
 import DefaultTable from 'components/table/DefaultTable.vue'
@@ -103,7 +138,8 @@ export default defineComponent({
     const showSpinner = ref(false)
     const tableShow = ref(false)
 
-    const params = ref({ url: 'https://65577771bd4bcef8b612b3f0.mockapi.io/api/v1/users' })
+    // const params = ref({ url: 'https://65577771bd4bcef8b612b3f0.mockapi.io/api/v1/users' })
+    const params = ref({ url: 'https://reqres.in/api/products' })
     const showForm = ref(true)
     function setShowForm (val) {
       showForm.value = val
@@ -123,16 +159,44 @@ export default defineComponent({
     const nonFilteredTableRows = ref([])
     function updateColumns (row) {
       const newColumns = []
+      columnTypeMenu.value = {}
       for (const item in row) {
         newColumns.push({
           name: item,
           label: item,
           field: item,
+          formatType: '',
           align: 'left',
           sortable: true
         })
+        columnTypeMenu.value[item] = false
       }
       return newColumns
+    }
+
+    const columnTypeMenu = reactive({})
+    const columnTypeOptions = ['color', 'date', 'image', 'link']
+    function columnTypeClick (label) {
+      columnTypeMenu.value[label] = true
+    }
+    function displayWithColumnFormat (col, val) {
+      if (col.formatType === 'color') {
+        if (typeof val === 'string' && (val.startsWith('#') || val.startsWith('rgb'))) {
+          return `<div style="background-color: ${val}; width: 20px; height: 20px; display: inline-block;"></div>${val}`;
+        }
+      } else if (col.formatType === 'link') {
+        return `<a href="${val}" target="_blank">${val}</a>`
+      }
+      return val
+    }
+
+    function updateColumnFormat (col, formatType) {
+      columns.value = columns.value.map(column => {
+        if (col.name === column.name) {
+          column.formatType = formatType
+        }
+        return column
+      })
     }
     function setTableRows (val) {
       rows.value = [...val]
@@ -202,6 +266,11 @@ export default defineComponent({
       apiKeys,
       incorrectApiKey,
       updateTable,
+      columnTypeMenu,
+      columnTypeOptions,
+      columnTypeClick,
+      displayWithColumnFormat,
+      updateColumnFormat,
       isImage: (str) => {
         const imageExtensions = /\.(jpeg|jpg|png|gif|bmp)$/i
         return imageExtensions.test(str)
