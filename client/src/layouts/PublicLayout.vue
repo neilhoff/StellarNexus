@@ -6,7 +6,7 @@
         <q-toolbar class="bg-primary text-primary-white">
           <img
             class="stellar-nexus-logo"
-            src="~/assets/StellarNexusLogo2.svg"
+            src="~/assets/logos/StellarNexusLogo2.svg"
           >
           <q-toolbar-title>
             Stellar Nexus

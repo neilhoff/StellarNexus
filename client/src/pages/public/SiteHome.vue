@@ -26,7 +26,7 @@
       <div class="row justify-end">
         <img
           class="col-7"
-          src="~/assets/StellarNexusClipped.svg"
+          src="~/assets/logos/StellarNexusClipped.svg"
         >
       </div>
     </div>
@@ -39,11 +39,11 @@
             target="_blank"
           ><img
               class="quasar-logo q-mr-sm"
-              src="~/assets/QUASAR_icon_light_background_RGB.svg"
+              src="~/assets/home-page/QUASAR_icon_light_background_RGB.svg"
             >
             <img
               class="quasar-logo-type"
-              src="~/assets/QUASAR - logotype.svg"
+              src="~/assets/home-page/QUASAR - logotype.svg"
             >
           </a>
         </div>
@@ -54,7 +54,7 @@
             target="_blank"
           ><img
               class="architect-logo q-pt-md"
-              src="~/assets/Architect-logo-black.svg"
+              src="~/assets/home-page/Architect-logo-black.svg"
             >
           </a>
         </div>
