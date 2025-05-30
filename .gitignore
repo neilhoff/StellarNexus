@@ -9,3 +9,5 @@ node_modules/
 
 cypress.env.json
 preferences.arc
+
+client/.env

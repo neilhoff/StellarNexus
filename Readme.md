@@ -156,6 +156,26 @@ arc deploy --production
     - Push the changes to the remote repository and create a tag
         - Example tag: `Release_2.0.1`
 
+## AWS Cognito Setup
+
+### Create a User Pool
+ 
+ - Manages users (sign-up, sign-in, MFA)
+
+#### Notes
+
+- To fix the error: `Uncaught Reference: global is not defined` I had to update the `build` section of `quasar.config.js` to include:
+
+```
+rawDefine: {
+    global: {}
+},
+```
+
+### Create an Identity Pool
+
+- Maps authenticated/unauthenticated users to AWS credentials to gain access to S3, DynamoDB, etc...
+
 ## Stellar Nexus Template Development
 
 ### Guidelines

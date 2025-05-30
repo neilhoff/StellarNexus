@@ -57,7 +57,7 @@
           data-cy="profile-photo-menu"
         >
           <q-separator class="q-mb-md" />
-          <!-- <avatar-with-menu v-if="userInfo" /> -->
+          <avatar-with-menu v-if="authStore.email" />
         </div>
       </q-scroll-area>
     </q-drawer>
@@ -70,7 +70,7 @@
 
 <script>
 import EssentialLink from './components/EssentialLink.vue'
-// import AvatarWithMenu from 'src/layouts/components/AvatarWithMenu.vue'
+import AvatarWithMenu from 'src/layouts/components/AvatarWithMenu.vue'
 import { essentialLinks } from 'src/services/protected/essentialLinks.js'
 import { useQuasar } from 'quasar'
 
@@ -78,17 +78,23 @@ import { computed, defineComponent } from 'vue'
 
 import { useConfigStore } from 'src/stores/configStore.js'
 const configStore = useConfigStore()
+import { useAuthStore } from 'src/stores/authStore'
 
 export default defineComponent({
   name: 'ProtectedLayout',
   components: {
-    EssentialLink
-    // AvatarWithMenu
+    EssentialLink,
+    AvatarWithMenu
   },
   setup () {
     const env = process.env.ENV
     const siteTitle = process.env.APP_DISPLAY_NAME
     const $q = useQuasar()
+    const authStore = useAuthStore()
+    // const userInfo = {
+    //   email: authStore.email,
+    //   displayName: authStore.email.split('@')[0]
+    // }
 
     return {
       authorizedLinkGroups: computed(() => essentialLinks.filter(lg => lg.authorized)),
@@ -97,7 +103,8 @@ export default defineComponent({
       leftDrawerState: computed(() => configStore.leftDrawerState),
       siteTitle,
       drawerLogo: computed(() => $q.dark.mode ? process.env.DRAWER_LOGO_DARK_MODE : process.env.DRAWER_LOGO),
-      drawerClass: computed(() => $q.dark.mode ? 'drawer-dark-mode' : 'drawer-light-mode')
+      drawerClass: computed(() => $q.dark.mode ? 'drawer-dark-mode' : 'drawer-light-mode'),
+      authStore
     }
   }
 })
