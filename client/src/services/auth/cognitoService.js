@@ -3,7 +3,6 @@ import {
   CognitoUser,
   AuthenticationDetails,
   CognitoUserAttribute,
-  // CognitoUserSession,
 } from 'amazon-cognito-identity-js'
 
 // Replace with your Cognito User Pool details
@@ -15,7 +14,7 @@ const poolData = {
 const userPool = new CognitoUserPool(poolData)
 
 // Sign-in function
-export const cognitoSignIn = async (email, password) => {
+export async function cognitoSignIn (email, password) {
   const authenticationDetails = new AuthenticationDetails({
     Username: email,
     Password: password,
@@ -42,7 +41,7 @@ export const cognitoSignIn = async (email, password) => {
 }
 
 // Check if user is authenticated
-export const isAuthenticated = async () => {
+export async function isAuthenticated () {
   const cognitoUser = userPool.getCurrentUser()
   if (!cognitoUser) return false
 
@@ -58,7 +57,7 @@ export const isAuthenticated = async () => {
 }
 
 // Sign-out function
-export const cognitoSignOut = () => {
+export function cognitoSignOut () {
   const cognitoUser = userPool.getCurrentUser()
   if (cognitoUser) {
     cognitoUser.signOut()
@@ -66,7 +65,7 @@ export const cognitoSignOut = () => {
 }
 
 // Get current user attributes
-export const getUserAttributes = async () => {
+export async function getUserAttributes () {
   const cognitoUser = userPool.getCurrentUser()
   if (!cognitoUser) throw new Error('No user logged in')
 
@@ -87,7 +86,8 @@ export const getUserAttributes = async () => {
   })
 }
 
-export const refreshSession = async () => {
+// Refresh session
+export async function refreshSession () {
   const cognitoUser = userPool.getCurrentUser()
   if (!cognitoUser) throw new Error('No user signed in')
 
@@ -112,7 +112,7 @@ export const refreshSession = async () => {
 }
 
 // Initiate password reset (sends verification code)
-export const forgotPassword = async (email) => {
+export async function forgotPassword (email) {
   const cognitoUser = new CognitoUser({
     Username: email,
     Pool: userPool,
@@ -130,7 +130,7 @@ export const forgotPassword = async (email) => {
 }
 
 // Confirm new password with verification code
-export const confirmNewPassword = async (email, verificationCode, newPassword) => {
+export async function confirmNewPassword (email, verificationCode, newPassword) {
   const cognitoUser = new CognitoUser({
     Username: email,
     Pool: userPool,
@@ -147,7 +147,7 @@ export const confirmNewPassword = async (email, verificationCode, newPassword) =
 }
 
 // Sign-up function (register new user)
-export const signUp = async (email, password, attributes = {}) => {
+export async function signUp (email, password, attributes = {}) {
   const attributeList = Object.entries(attributes).map(([name, value]) => {
     return new CognitoUserAttribute({
       Name: name,
@@ -171,7 +171,7 @@ export const signUp = async (email, password, attributes = {}) => {
 }
 
 // Confirm sign-up (verify email with code)
-export const confirmSignUp = async (email, confirmationCode) => {
+export async function confirmSignUp (email, confirmationCode) {
   const cognitoUser = new CognitoUser({
     Username: email,
     Pool: userPool
@@ -188,7 +188,8 @@ export const confirmSignUp = async (email, confirmationCode) => {
   })
 }
 
-export const resendConfirmationCode = async (email) => {
+// Resend confirmation code
+export async function resendConfirmationCode (email) {
   const cognitoUser = new CognitoUser({
     Username: email,
     Pool: userPool
@@ -207,62 +208,3 @@ export const resendConfirmationCode = async (email) => {
     })
   })
 }
-
-
-
-
-
-
-
-
-
-// import { UserManager } from "oidc-client-ts"
-
-// const cognitoAuthConfig = {
-//   authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_VmIicVsbD",
-//   client_id: "59vrm1gtbtllpjvkcp6llo3eot",
-//   // redirect_uri: "https://d84l1y8p4kdic.cloudfront.net",
-//   redirect_uri: 'http://localhost:9000',
-//   response_type: "code",
-//   scope: "email openid phone",
-//   loadUserInfo: true
-// }
-
-// // create a UserManager instance
-// export const userManager = new UserManager({
-//   ...cognitoAuthConfig,
-// })
-
-// export async function signOutRedirect () {
-//   const cognitoDomain = "https://us-east-1vmiicvsbd.auth.us-east-1.amazoncognito.com"
-//   window.location.href = `${cognitoDomain}/logout?client_id=${cognitoAuthConfig.clientId}`
-// }
-
-// import { Amplify } from '@aws-amplify/core'
-// // import { Auth } from '@aws-amplify/auth'
-// import { Auth } from '@aws-amplify/auth'
-
-
-// Amplify.configure({
-//   Auth: {
-//     // Your Auth-specific configuration here (e.g., Cognito user pool details)
-//     identityPoolId: 'us-east-1:83c7cadd-c9f6-47c1-a12a-f0cf4f2f0b43',
-//     region: 'us-east-1',
-//     userPoolId: 'us-east-1_VmIicVsbD',
-//     userPoolWebClientId: '59vrm1gtbtllpjvkcp6llo3eot',
-//     oauth: {
-//       domain: 'https://us-east-1vmiicvsbd.auth.us-east-1.amazoncognito.com', // e.g., "auth.yourapp.com.auth.us-east-1.amazoncognito.com"
-//       scope: ['openid', 'profile', 'email', 'phone'],
-//       redirectSignIn: 'http://localhost:9000', // Your redirect URI
-//       redirectSignOut: 'http://localhost:9000',
-//       responseType: 'code' // Required for redirect flow
-//     }
-//   },
-// })
-
-// // Now use Auth features like signIn, signUp, etc.
-// // Auth.signIn('username', 'password')
-// //   .then(user => console.log(user))
-// //   .catch(err => console.log(err))
-
-// export default Auth

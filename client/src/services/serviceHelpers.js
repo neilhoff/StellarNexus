@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-function ServiceException (name, message, stack) {
+function ServiceException (status, name, message, stack) {
+  this.status = status
   this.name = name
   this.message = message
   this.stack = stack
@@ -11,29 +12,23 @@ const timeoutError = (stack, extraMessage = '') => {
 }
 
 function catchError (error, serviceErrorObj) {
-  if (error.name === 'TimeOutError') {
-    throw error
-  } else {
-    console.log(error)
+  if (error.name === 'AxiosError') {
     let errorMessage
-    if (error.response && error.response.data) {
-      if ((Array.isArray(error.response.data) || typeof error.response.data === 'string') && error.response.data.includes('HTTP 401 - Unauthorized')) {
-        errorMessage = 'HTTP 401 - Unauthorized: The SAP service account has an issue'
-      } else if (error.response.data.message) {
-        errorMessage = error.response.data.message
-      } else {
-        errorMessage = error.response.data
-      }
+    if (error.response?.data?.error) {
+      errorMessage = error.response.data.error
+    } else if (error.response?.data) {
+      errorMessage = JSON.stringify(error.response.data)
     } else {
       errorMessage = error.message
     }
     throw new ServiceHelpers.ServiceException(
+      error.status,
       serviceErrorObj.title,
-      `<div style="font-size: 1.1rem; font-weight: bold;">${serviceErrorObj.description}</div>
-         <div style="font-size: .7rem; margin-bottom: 5px;">${new Date()}</div>
-         ${errorMessage.substring(0, 500)}`,
-      errorMessage
+      errorMessage,
+      error.response
     )
+  } else {
+    throw error
   }
 }
 
