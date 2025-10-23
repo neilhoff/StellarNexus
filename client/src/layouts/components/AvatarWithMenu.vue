@@ -9,6 +9,7 @@
         data-cy="profile-pic"
       >
         <q-img
+          data-stellar-track="Left drawer profile image"
           :src="authStore.userPhoto"
           v-if="authStore.userPhoto"
         >
@@ -16,6 +17,7 @@
         </q-img>
         <i
           class="fas fa-user text-primary"
+          data-stellar-track="Left drawer profile image"
           style="font-size: 1.5rem;"
           v-else
         >
@@ -32,18 +34,12 @@
           <div class="display-name q-mb-none">
             {{ authStore.email.split('@')[0] }}
           </div>
-
-          <div
-            class="company text-grey-7"
-            v-if="authStore.userInfo?.officeLocation"
-          >
-            <!-- {{ authStore.userInfo.officeLocation }} - {{ authStore.userInfo.companyName }} -->
-          </div>
         </div>
         <div>
 
           <q-icon
             class="menu-ellipsis q-pa-xs"
+            data-stellar-track="Left drawer profile ellipsis"
             name="fas fa-ellipsis-h"
           >
             <profile-menu />

@@ -16,6 +16,14 @@ const routes = [
     ],
     meta: { requiresAuth: true }
   },
+  {
+    path: '/protected/admin',
+    component: () => import('layouts/ProtectedLayout.vue'),
+    children: [
+      { path: '/protected/admin/stellar-analytics', component: () => import('pages/protected/admin/StellarTracks/StellarAnalytics.vue') }
+    ],
+    meta: { requiresAuth: true, requiresAdmin: true } //TODO: Setup admin authorizations
+  },
 
   // Always leave this as last one,
   // but you can also remove it

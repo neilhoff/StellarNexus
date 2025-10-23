@@ -52,7 +52,7 @@ export const essentialLinks = [
         title: 'Analytics',
         icon: 'fas fa-chart-bar',
         link: {
-          location: '/admin/analytics',
+          location: '/protected/admin/stellar-analytics',
           internal: true
         },
         authorized: true

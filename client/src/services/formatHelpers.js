@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { addDays, subDays, format } from 'date-fns'
 
 function getInitialFormatObj (val) {
   return {
@@ -57,11 +57,16 @@ function formatCurrency (val, options) {
   return formatObj
 }
 function formatDateString (val, options) {
-  const formatObj = getInitialFormatObj(val)
+  const initialValue = options.subDays ?
+    subDays(val, options.subDays) :
+    options.addDays ?
+      addDays(val, options.addDays) :
+      val
+  const formatObj = getInitialFormatObj(initialValue)
   try {
     // https://date-fns.org/v4.1.0/docs/format#
     // const dateVal = new Date(val)
-    formatObj.formattedVal = format(val, options.formatStr)
+    formatObj.formattedVal = format(initialValue, options.formatStr)
   } catch (error) {
     formatObj.statusText = error
   }

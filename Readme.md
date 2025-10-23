@@ -35,6 +35,19 @@ $ git checkout master
 $ git merge upstream/master
 ```
 
+## Upgrade to the Latest Versions of Quasar and Architect
+
+- This should be done at the Template and pulled to forked projects
+- https://quasar.dev/start/upgrade-guide
+- Navigate to `client` and run: `quasar upgrade --install`
+- To see if other packages need to be upgraded run: `npm outdated`
+    - Then run `npm install --save package@latest` where "package" is the name of the npm package
+- TEST EVERYTHING!!!
+- If you run into errors on Quasar after pulling the updated template to the local project you may have to:
+    - Delete `client/package-lock.json`
+    - Delete `client/node_modules`
+    - run `npm install`
+    
 ## Development Environment Setup
 
 - Windows: Install [NVM for Windows](https://github.com/coreybutler/nvm-windows)

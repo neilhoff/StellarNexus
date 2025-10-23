@@ -1,19 +1,37 @@
 import { boot } from 'quasar/wrappers'
 import { Notify } from 'quasar'
 import { serializeError } from 'serialize-error'
-// import skylog from 'src/services/admin/skylog/postSkyLog'
+import webSocketService from 'src/services/ws/baseWebSocketService.js'
+import { trackClicks } from 'src/services/stellarTrack.js'
 
 // Allow Cypress access to the Pinia stores
 import { useAuthStore } from 'src/stores/authStore.js'
-const authStore = useAuthStore()
 import { useConfigStore } from 'src/stores/configStore.js'
-const configStore = useConfigStore()
-// Cypress automatically sets window.Cypress by default
-if (window.Cypress) {
-  window.store = { authStore, configStore }
-}
 
+let globalWebSocket = null
 export default boot(async ({ app }) => {
+  // Cypress automatically sets window.Cypress by default
+  if (window.Cypress) {
+    const authStore = useAuthStore()
+    const configStore = useConfigStore()
+    window.store = { authStore, configStore }
+  }
+
+  // Initialize WebSocket connection
+  webSocketService.connect().catch((error) => {
+    console.error('Failed to connect WebSocket:', error)
+  })
+
+  // Make WebSocket service globally available
+  app.config.globalProperties.$webSocket = webSocketService
+  globalWebSocket = webSocketService // Store for non-Vue access
+
+  // Add global click listener
+  document.addEventListener('click', (event) => {
+    // trackClicks only tracks elements with data-stellar-track
+    trackClicks(event)
+  })
+
   app.config.errorHandler = (err, vm, info) => {
     // handle error
     // `info` is a Vue-specific error info, e.g. which lifecycle hook
@@ -54,3 +72,8 @@ export default boot(async ({ app }) => {
     })
   }
 })
+
+// Export a function to access the WebSocket service
+export function getWebSocketService () {
+  return globalWebSocket
+}

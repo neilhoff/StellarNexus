@@ -2,6 +2,7 @@ import { defineRouter } from '#q-app/wrappers'
 import { createRouter, createMemoryHistory, createWebHistory, createWebHashHistory } from 'vue-router'
 import routes from './routes'
 import { isAuthenticated } from 'src/services/auth/cognitoService'
+import { trackPageView } from 'src/services/stellarTrack.js'
 
 /*
  * If not building with SSR mode, you can
@@ -30,7 +31,7 @@ export default defineRouter(function (/* { store, ssrContext } */) {
   // Navigation Guard
   Router.beforeEach(async (to, from, next) => {
     const authenticated = await isAuthenticated()
-
+    trackPageView(to, from)
     // If the route requires authentication and the user is not authenticated
     if (to.meta.requiresAuth && !authenticated) {
       return next({

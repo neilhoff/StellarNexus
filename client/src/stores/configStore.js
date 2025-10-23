@@ -4,7 +4,10 @@ export const useConfigStore = defineStore('configStore', {
   state: () => ({
     darkMode: false,
     leftDrawerOptions: ['max', 'mini', 'hidden'],
-    leftDrawerState: 'mini'
+    leftDrawerState: 'mini',
+    stellarTrack: {
+      deviceId: ''
+    }
   }),
   getters: {
   },
