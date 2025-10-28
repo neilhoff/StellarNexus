@@ -8,19 +8,19 @@ const routes = [
     ]
   },
   {
-    path: '/protected',
+    path: '/p',
     component: () => import('layouts/ProtectedLayout.vue'),
     children: [
       { path: '', component: () => import('pages/protected/IndexPage.vue') },
-      { path: '/protected/call-rest-api', component: () => import('pages/protected/callRestApi/CallRestApi.vue') }
+      { path: '/p/call-rest-api', component: () => import('pages/protected/callRestApi/CallRestApi.vue') }
     ],
     meta: { requiresAuth: true }
   },
   {
-    path: '/protected/admin',
+    path: '/p/admin',
     component: () => import('layouts/ProtectedLayout.vue'),
     children: [
-      { path: '/protected/admin/stellar-analytics', component: () => import('pages/protected/admin/StellarTracks/StellarAnalytics.vue') }
+      { path: '/p/admin/stellar-analytics', component: () => import('pages/protected/admin/StellarTracks/StellarAnalytics.vue') }
     ],
     meta: { requiresAuth: true, requiresAdmin: true } //TODO: Setup admin authorizations
   },

@@ -362,7 +362,7 @@ export default {
       await cognitoServiceCallWrapper(async () => {
         // const { accessToken, idToken } = await signIn(email.value, password.value)
         await authStore.signIn(email.value, password.value, staySignedIn.value)
-        router.push('/protected') // Redirect to protected route
+        router.push('/p') // Redirect to protected route
       }, null, 'Sign in failed')
       if (error.value.code === 'UserNotConfirmedException') {
         showResendConfirmationCodeButton.value = true

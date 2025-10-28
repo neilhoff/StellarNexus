@@ -11,7 +11,7 @@ export const essentialLinks = [
         title: 'Home',
         icon: 'fas fa-home',
         link: {
-          location: '/protected',
+          location: '/p',
           internal: true
         },
         authorized: true
@@ -27,7 +27,7 @@ export const essentialLinks = [
         title: 'Call REST API',
         icon: 'fas fa-cloud',
         link: {
-          location: '/protected/call-rest-api',
+          location: '/p/call-rest-api',
           internal: true
         },
         authorized: true
@@ -52,7 +52,7 @@ export const essentialLinks = [
         title: 'Analytics',
         icon: 'fas fa-chart-bar',
         link: {
-          location: '/protected/admin/stellar-analytics',
+          location: '/p/admin/stellar-analytics',
           internal: true
         },
         authorized: true

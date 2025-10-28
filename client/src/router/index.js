@@ -41,8 +41,8 @@ export default defineRouter(function (/* { store, ssrContext } */) {
     }
 
     // If the user is authenticated and tries to access login, redirect to protected
-    if (authenticated && to.path === '/auth/signin') {
-      return next('/protected')
+    if ((authenticated && to.path === '/auth/signin') || (authenticated && to.path === '/auth/signup')) {
+      return next('/p')
     }
 
     // Allow navigation

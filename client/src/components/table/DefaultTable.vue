@@ -225,7 +225,7 @@ export default defineComponent({
     },
     tableShow: {
       type: Boolean,
-      default: false
+      default: true
     }
 
   },

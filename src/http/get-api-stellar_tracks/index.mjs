@@ -68,8 +68,9 @@ function getSummary (tracks) {
     if (!dayMap) {
       dayMap = new Map()
       viewTotals.summaryByDay.set(day, dayMap)
+      dayMap.set('total', 0)
     }
-
+    dayMap.set('total', (dayMap.get('total') || 0) + 1)
     for (const [key, value] of Object.entries(td)) {
       if (!propertiesToSummarize.has(key)) continue
       const pluralKey = pluralMap[key]
@@ -99,10 +100,13 @@ function getSummary (tracks) {
   }
   for (const [day, map] of viewTotals.summaryByDay) {
     result.summaryByDay[day] = Object.fromEntries(
-      Array.from(map, ([key, subMap]) => [key, Object.fromEntries(subMap)])
+      Array.from(map, ([key, value]) => [
+        key,
+        value instanceof Map ? Object.fromEntries(value) : value
+      ])
     )
   }
-  return result
+  return result;
 }
 
 async function getStellarTracks (req) {
