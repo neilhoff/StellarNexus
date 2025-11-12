@@ -1,4 +1,6 @@
 import arc from '@architect/functions'
+import { allShards, pLimit } from '@architect/shared/tableHelper.mjs'
+import { getYearMonth } from '@architect/shared/format.mjs'
 
 const pluralMap = {
   userName: 'userNames',
@@ -9,68 +11,145 @@ const pluralMap = {
   os: 'oses',
   mobileDeviceType: 'mobileDeviceTypes',
   leftDrawerState: 'leftDrawerStates',
-  darkMode: 'darkMode'
+  darkMode: 'darkMode',
+  dataCy: 'clickedItems'
 }
 const propertiesToSummarize = new Set(Object.keys(pluralMap))
+
+function endOfDayUTC (date = new Date()) {
+  const d = new Date(Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate() + 1
+  ))
+  return new Date(d.getTime() - 1)
+}
 
 async function getTracks (trackType, startDate, endDate) {
   const db = await arc.tables()
   const table = db.stellarTracks
-
+  console.log(startDate)
   const start = new Date(startDate)
-  const end = new Date(endDate)
+  const end = endOfDayUTC(new Date(endDate))
 
+  // Collect months
   const months = new Set()
-  let current = new Date(start)
-  while (current <= end) {
-    const month = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`
-    months.add(month)
-    current.setDate(current.getDate() + 1)
+  let cur = new Date(start)
+  while (cur <= end) {
+    months.add(getYearMonth(cur))
+    cur.setUTCDate(cur.getUTCDate() + 1)
   }
 
   const tracks = []
+  const limit = pLimit(25)  // 25 parallel queries max (DynamoDB + Lambda safe)
+
+  const promises = []
 
   for (const month of months) {
-    const monthStart = new Date(month + '-01')
-    const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0)
+    const monthStart = new Date(`${month}-01T00:00:00.000Z`)
+    const monthEnd = endOfDayUTC(new Date(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0))
     const queryStart = start > monthStart ? start : monthStart
     const queryEnd = end < monthEnd ? end : monthEnd
 
-    try {
-      const result = await table.query({
-        KeyConditionExpression: 'pk = :month AND sk BETWEEN :start AND :end',
-        ExpressionAttributeValues: {
-          ':month': month,
-          ':start': `${queryStart.toISOString()}#${trackType}`,
-          ':end': `${queryEnd.toISOString()}#${trackType}`
-        }
-      })
+    console.log(queryStart.toISOString())
+    console.log(queryEnd.toISOString())
 
-      if (result.Items) tracks.push(...result.Items)
-    } catch (error) {
-      console.error(`Failed to query ${month}:`, error)
+    for (const shard of allShards()) {
+      const pk = `${trackType}#${shard}#${month}`
+      // console.log(pk)
+
+      promises.push(
+        limit(async () => {
+          try {
+            const result = await table.query({
+              KeyConditionExpression: 'pk = :pk AND sk BETWEEN :start AND :end',
+              ExpressionAttributeValues: {
+                ':pk': pk,
+                ':start': queryStart.toISOString(),
+                ':end': queryEnd.toISOString()
+              }
+            })
+            // console.log(result)
+            if (result.Items) {
+              tracks.push(...result.Items)
+            }
+          } catch (err) {
+            console.error(`Query failed for ${pk}:`, err)
+          }
+        })
+      )
     }
   }
 
-  tracks.sort((a, b) => new Date(a.trackData.timeStamp) - new Date(b.trackData.timeStamp))
+  await Promise.all(promises)
+  // console.log('tracks', tracks)
+  // Sort once
+  tracks.sort((a, b) => {
+    const aTime = a.trackData?.timeStamp || a.errorData?.timeStamp
+    const bTime = b.trackData?.timeStamp || b.errorData?.timeStamp
+    return new Date(aTime) - new Date(bTime)
+  })
 
   return tracks
 }
 
+function getSummaryMap (summaryItem, value) {
+  let sMap = summaryItem.get(value)
+  if (!sMap) {
+    sMap = new Map()
+    summaryItem.set(value, sMap)
+    sMap.set('total', 0)
+  }
+  sMap.set('total', (sMap.get('total') || 0) + 1)
+  return sMap
+}
+
+function updateSummaryCounts (sMap, pluralKey, value) {
+  let sKeyMap = sMap.get(pluralKey)
+  if (!sKeyMap) {
+    sKeyMap = new Map()
+    sMap.set(pluralKey, sKeyMap);
+  }
+  sKeyMap.set(value, (sKeyMap.get(value) || 0) + 1)
+}
+
+function convertMapToObject (sMap) {
+  const sObj = {}
+  for (const [day, map] of sMap) {
+    sObj[day] = Object.fromEntries(
+      Array.from(map, ([key, value]) => [
+        key,
+        value instanceof Map ? Object.fromEntries(value) : value
+      ])
+    )
+  }
+  return sObj
+}
+
 function getSummary (tracks) {
   const totalViews = tracks.length
-  const viewTotals = { totalViews, summaryByDay: new Map() }
+  const viewTotals = {
+    totalViews,
+    summaryByDay: new Map()
+  }
   const propertyCounts = new Map()
+  const summaryBy = {}
+  propertiesToSummarize.forEach(key => {
+    summaryBy[key] = new Map()
+  })
 
   for (const { trackData: td } of tracks) {
+    // Setup daily summary
     const day = td.timeStamp.slice(0, 10).replace(/-/g, '/') // Optimize: yyyy/M/dd
-    let dayMap = viewTotals.summaryByDay.get(day)
-    if (!dayMap) {
-      dayMap = new Map()
-      viewTotals.summaryByDay.set(day, dayMap)
-      dayMap.set('total', 0)
+    const dayMap = getSummaryMap(viewTotals.summaryByDay, day)
+
+    // Setup summary counts for each item in the propertiesToSummarize
+    const summaryMap = {}
+    for (const key of Object.keys(summaryBy)) {
+      summaryMap[key] = getSummaryMap(summaryBy[key], td[key])
     }
-    dayMap.set('total', (dayMap.get('total') || 0) + 1)
+
+    // Iterate through each track
     for (const [key, value] of Object.entries(td)) {
       if (!propertiesToSummarize.has(key)) continue
       const pluralKey = pluralMap[key]
@@ -84,34 +163,35 @@ function getSummary (tracks) {
       keyMap.set(value, (keyMap.get(value) || 0) + 1)
 
       // Update daily counts
-      let dayKeyMap = dayMap.get(pluralKey)
-      if (!dayKeyMap) {
-        dayKeyMap = new Map()
-        dayMap.set(pluralKey, dayKeyMap);
+      updateSummaryCounts(dayMap, pluralKey, value)
+
+      // Update all other summary counts
+      for (const key of Object.keys(summaryBy)) {
+        updateSummaryCounts(summaryMap[key], pluralKey, value)
       }
-      dayKeyMap.set(value, (dayKeyMap.get(value) || 0) + 1)
     }
   }
 
   // Convert Maps to objects for return
-  const result = { totalViews, summaryByDay: {} }
+  const result = { totalViews, summary: {}, summaryByDay: {}, summaryBy: {} }
+  // overall summary
   for (const [key, map] of propertyCounts) {
-    result[key] = Object.fromEntries(map)
+    result.summary[key] = Object.fromEntries(map)
   }
-  for (const [day, map] of viewTotals.summaryByDay) {
-    result.summaryByDay[day] = Object.fromEntries(
-      Array.from(map, ([key, value]) => [
-        key,
-        value instanceof Map ? Object.fromEntries(value) : value
-      ])
-    )
+  // Summary by day
+  result.summaryByDay = convertMapToObject(viewTotals.summaryByDay)
+
+  // All other summaries
+  for (const key of Object.keys(summaryBy)) {
+    result.summaryBy[key] = convertMapToObject(summaryBy[key])
   }
-  return result;
+
+  return result
 }
 
 async function getStellarTracks (req) {
-  const { trackType, start, end } = req.queryStringParameters || {}
-  console.log(trackType, start, end)
+  const { trackType, dateStart, dateEnd } = req.queryStringParameters || {}
+  // console.log('end', dateEnd, dateStart, trackType)
   if (!trackType) {
     return {
       cors: true,
@@ -121,21 +201,20 @@ async function getStellarTracks (req) {
     }
   }
 
-  const endDate = end || new Date().toISOString()
-  const startDate = start || new Date(new Date(endDate).setDate(new Date(endDate).getDate() - 6)).toISOString()
+  const endDate = dateEnd || new Date().toISOString()
+  const startDate = dateStart || new Date(new Date(endDate).setDate(new Date(endDate).getDate() - 6)).toISOString()
 
   try {
-    const tracks = await getTracks(trackType, startDate, endDate)
     // const startTime = Date.now()
+    const tracks = await getTracks(trackType, startDate, endDate)
+
     const summary = getSummary(tracks)
-    const summaryByDay = summary.summaryByDay
-    delete summary.summaryByDay
 
     const returnObj = {
       tracks,
-      summaryByDay,
-      summary
+      ...summary
     }
+    // console.log(returnObj)
     // console.log(`Processed ${tracks.length} tracks in ${Date.now() - startTime} ms`)
     return {
       cors: true,

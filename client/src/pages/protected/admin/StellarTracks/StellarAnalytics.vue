@@ -1,8 +1,16 @@
 <template>
   <q-page>
     <page-header title="Stellar Tracks Analytics" />
-    <div style="max-width: 1080px;">
+    <!-- <q-btn
+      color="primary"
+      data-cy="error-btn"
+      icon="check"
+      label="OK"
+      @click="console.log({}.x.y)"
+    /> -->
+    <div class="row">
       <default-form
+        class="col-8"
         leftColumnTitle="Date Range"
         @onSubmit="getStellarAnalytics"
         rightColumnTitle=""
@@ -11,18 +19,19 @@
       >
         <template v-slot:left>
           <start-end-date-inputs :modelValue="dateRange" />
-          <q-inner-loading :showing="showSpinner">
-            <q-spinner
-              size="50px"
-              color="primary"
-            />
-          </q-inner-loading>
+          <q-radio
+            :label="type.label"
+            :key="type.val"
+            :val="type.val"
+            v-for="type of trackTypeOptions"
+            v-model="trackType"
+          />
         </template>
       </default-form>
     </div>
     <div
       class="q-mt-md"
-      v-show="trackData.length > 0"
+      v-if="showAnalytics"
     >
       <q-chip
         color="primary"
@@ -32,65 +41,54 @@
       >
         {{ searchedDateRange.dateStart }} to {{ searchedDateRange.dateEnd }}
       </q-chip>
-      <div class="charts q-col-gutter-sm q-mt-sm row">
+      <chart-row :charts="charts" />
+      <!-- <div class="charts q-col-gutter-sm q-mt-sm row">
         <div class="col-md-4 col-xs-12">
-          <q-card
-            bordered
-            flat
-          >
-            <h2 class="q-ml-md">Views by Day</h2>
-            <q-card-section>
-              <canvas
-                class="chart"
-                ref="dayViewsCanvas"
-              ></canvas>
-            </q-card-section>
-          </q-card>
+          <stellar-chart
+            chartType="dayViews"
+            :data="chartData.dayViews"
+          />
         </div>
         <div class="col-md-4 col-xs-12">
-          <q-card
-            bordered
-            flat
-          >
-            <h2 class="q-ml-md">Page Views</h2>
-            <q-card-section>
-              <canvas
-                class="chart"
-                ref="pageViewsCanvas"
-              ></canvas>
-            </q-card-section>
-          </q-card>
+          <stellar-chart
+            chartType="pageViews"
+            :data="chartData.pageViews"
+          />
         </div>
         <div class="col-md-4 col-xs-12">
-          <q-card
-            bordered
-            flat
-          >
-            <h2 class="q-ml-md">Users</h2>
-            <q-card-section>
-              <canvas
-                class="chart"
-                ref="userViewsCanvas"
-              ></canvas>
-            </q-card-section>
-          </q-card>
+          <stellar-chart
+            chartType="userViews"
+            :data="chartData.userViews"
+          />
         </div>
-      </div>
+      </div> -->
     </div>
     <default-table
       class="q-mt-md q-mb-lg"
       data-cy="tracks-table"
       :nonFilteredTableRows="nonFilteredTableRows"
       row-key=""
-      :showSpinner="showSpinner"
-      tableName="Page Views"
+      :tableName="tableTitle"
       :tableColumns="tableColumns"
       :tableRows="tableRows"
       @updateRows="setTableRows"
-      :tableShow="trackData.length > 0"
+      :tableShow="showAnalytics"
     >
-    </default-table>
+      <!-- <template v-slot:body-cell-urlQuery="props">
+        <td :props="props">
+          <div
+            :key="item"
+            v-for="item of props.value"
+          >
+            {{ item }}
 
+          </div>
+        </td>
+      </template> -->
+    </default-table>
+    <q-inner-loading :showing="showSpinner">
+      <default-spinner />
+    </q-inner-loading>
   </q-page>
 </template>
 
@@ -102,16 +100,20 @@ import DefaultForm from 'src/components/form/DefaultForm.vue'
 import StartEndDateInputs from 'src/components/form/StartEndDateInputs.vue'
 import formatHelper from 'src/services/formatHelpers.js'
 import { stellarTracksService } from 'src/services/protected/stellarTracks/getStellarTracksService.js'
-import Chart from 'chart.js/auto'
 import { defaultTableSetup } from 'components/table/defaultTableSetup.js'
+import DefaultSpinner from 'src/components/DefaultSpinner.vue'
+import { Notify } from 'quasar'
+import ChartRow from './components/ChartRow.vue'
 
 export default defineComponent({
   name: 'StellarAnalytics',
   components: {
     DefaultForm,
+    DefaultSpinner,
     DefaultTable,
     StartEndDateInputs,
-    PageHeader
+    PageHeader,
+    ChartRow
   },
   setup () {
     const dateOptions = { formatStr: 'M/dd/yyyy' }
@@ -125,123 +127,18 @@ export default defineComponent({
       showForm.value = val
     }
 
-    const pageViewChart = ref()
-    const pageViewsCanvas = ref()
-    function setPageViewChart (data) {
-      console.log(data)
-      const labels = Object.keys(data)
-      const dataValues = labels.map(l => data[l])
-      if (pageViewChart.value) {
-        pageViewChart.value.destroy()
-        pageViewChart.value = null
-      }
-      console.log('dataValues', dataValues)
-      pageViewChart.value = new Chart(pageViewsCanvas.value, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Views',
-            data: dataValues,
-            borderWidth: 1
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          },
-          plugins: {
-            legend: {
-              display: false
-            }
-          }
-        }
-      })
-    }
-
-    const dayViewsChart = ref()
-    const dayViewsCanvas = ref()
-    function setDayViewsChart (data) {
-      const keys = Object.keys(data)
-      const labels = keys.map(date => {
-        // Convert date from YYYY/MM/DD to MM/DD/YY
-        const dateObj = new Date(date)
-        return formatHelper.formatDateString(dateObj, { formatStr: 'M/dd/yy' }).formattedVal
-      })
-      const dataValues = keys.map(l => data[l].total)
-      if (dayViewsChart.value) {
-        dayViewsChart.value.destroy()
-        dayViewsChart.value = null
-      }
-      dayViewsChart.value = new Chart(dayViewsCanvas.value, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Views',
-            fill: true,
-            data: dataValues,
-            borderWidth: 1
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          },
-          plugins: {
-            legend: {
-              display: false
-            }
-          }
-        }
-      })
-    }
-
-    const userViewsChart = ref()
-    const userViewsCanvas = ref()
-    function setUserViewsChart (data) {
-      const labels = Object.keys(data)
-      const dataValues = labels.map(l => data[l])
-      if (userViewsChart.value) {
-        userViewsChart.value.destroy()
-        userViewsChart.value = null
-      }
-      console.log('dataValues', dataValues)
-      userViewsChart.value = new Chart(userViewsCanvas.value, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Users',
-            data: dataValues,
-            borderWidth: 1
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          },
-          plugins: {
-            legend: {
-              display: false
-            }
-          }
-        }
-      })
-    }
-
     const { showSpinner, tableRows, nonFilteredTableRows, tableColumns, setTableRows } = defaultTableSetup()
-    function generateTableColumns (data, options = {}) {
+    function generateTableColumns (data, options = { format: {}, sort: {} }) {
       // Data must be an array of objects
       // Available Options:
       //  objectKey: is used if you want the keys from a 2nd level object
       //  betterLabel: true/false is used to convert to keys to better looking labels
+      //  keysToTheTop: array of columns you want moved to the top of the array
+      //     - keysToTheTop: ['column1', 'column5', 'column3']
+      //  format: Object of column names to format function for value display:
+      //     - format: { column1: (val) => `${val}%`, column2: ... }
+      //  sort: Object of column names to sort function
+      //     - sort: { column1: (a,b) => parsInt(a) - parseInt(b) }
 
       function getBetterLabel (key) {
         // Handle kebab-case (replace hyphens) and snake_case (replace underscores) with spaces
@@ -257,7 +154,7 @@ export default defineComponent({
         // This is a simple heuristic; adjust as needed for specific acronyms
         result = result.replace(/([A-Z]{2,})(?![a-z])/g, word => {
           return word.split("").join(" ")
-        });
+        })
 
         // Convert to title case: capitalize first letter of each word, lowercase the rest
         result = result
@@ -272,14 +169,24 @@ export default defineComponent({
 
         return result
       }
-      // Get the keys for the first item
+      // Get the keys (columns) for the first item
       let keys = options.objectKey ? Object.keys(data[0][options.objectKey]) : Object.keys(data[0])
       // Go through the entire array to see if there are any other keys
       for (const item of data) {
         const k = options.objectKey ? Object.keys(item[options.objectKey]) : options.objectKey.keys(item)
         keys = [...new Set([...keys, ...k])]
       }
-      console.log(keys)
+
+      if (options.keysToTheTop) {
+        for (const key of options.keysToTheTop.reverse()) {
+          const index = keys.findIndex((id) => id === key)
+          if (index !== -1) {
+            const keyToMove = keys.splice(index, 1)
+            keys.unshift(keyToMove[0])
+          }
+        }
+      }
+
       // Setup the columns
       const columns = keys.map(key => {
         return {
@@ -287,109 +194,111 @@ export default defineComponent({
           label: options.betterLabel ? getBetterLabel(key) : key,
           field: key,
           align: 'left',
-          sortable: true
+          format: options.format[key],
+          sortable: true,
+          sort: options.sort[key]
         }
       })
       console.log(columns)
       return columns
     }
 
-    const trackData = ref([])
+    const trackType = ref('pageView')
+    const trackTypeOptions = [
+      {
+        label: 'Page Views',
+        val: 'pageView'
+      },
+      {
+        label: 'Clicks',
+        val: 'click'
+      }
+    ]
+    // const trackData = ref([])
     const searchedDateRange = ref({ dateStart: '', dateEnd: '' })
+    const showAnalytics = ref(false)
+    const tableTitle = ref()
+    // const chartData = ref({ pageViews: null, byDayViews: null, byUserViews: null })
+    const charts = ref()
     async function getStellarAnalytics () {
-      // tableShow.value = false
       showSpinner.value = true
+      showAnalytics.value = false
+      // trackData.value = []
       try {
-        const response = await stellarTracksService.getPageViews({ dateRange: { ...dateRange } })
+        const response = await stellarTracksService.getAnalytics({ trackType: trackType.value, ...dateRange.value })
         console.log(response)
-        trackData.value = response.tracks
-        searchedDateRange.value = { ...dateRange.value }
+        if (response.tracks.length > 0) {
+          // Set the table title
+          const chosenTrackType = trackTypeOptions.find(t => t.val === trackType.value)
+          tableTitle.value = chosenTrackType.label
 
-        setPageViewChart(response.summary.urls)
-        setDayViewsChart(response.summaryByDay)
-        setUserViewsChart(response.summary.userNames)
+          if (trackType.value === 'pageView') {
+            charts.value = [
+              {
+                type: 'dayViews',
+                data: response.summaryByDay
+              },
+              {
+                type: 'pageViews',
+                data: response.summary.urls
+              },
+              {
+                type: 'userViews',
+                data: response.summary.userNames
+              }
+            ]
+          } else if (trackType.value === 'click') {
+            console.log('clicks')
+            charts.value = [
+              {
+                type: 'clickView',
+                data: response.summary.clickedItems
+              }
+              // {
+              //   type: '',
+              //   data:
+              // },
+              // {
+              //   type: '',
+              //   data:
+              // }
+            ]
+          }
 
-        tableColumns.value = generateTableColumns(response.tracks, { objectKey: 'trackData', betterLabel: true })
-        const rows = trackData.value.map(item => item.trackData)
-        setTableRows(rows)
-        // baseUrl.value = extractBaseUrl(params.value.url)
-        // apiResponse.value = response
-        // apiKeys.value = response instanceof Array ? '' : Object.keys(response)
-        // let rows
-        // if (response[params.value.dataKey]) {
-        //   rows = params.value.dataKey ? response[params.value.dataKey] : response
-        // } else {
-        //   rows = response
-        //   incorrectApiKey.value = params.value.dataKey
-        // }
-        // // console.log(apiResponse.value)
-        // // columns.value = updateColumns(rows)
-        // rowKey.value = columns.value[0] ? columns.value[0].field : ''
-        setShowForm(false)
-        // tableShow.value = true
+          // Setup the columns for the table
+          tableColumns.value = generateTableColumns(response.tracks, {
+            objectKey: 'trackData',
+            betterLabel: true,
+            keysToTheTop: ['dataCy', 'url', 'urlQuery', 'fromUrl', 'fromUrlQuery'],
+            format: {
+              urlQuery: (val) => JSON.stringify(val)
+            },
+            sort: {
+              urlQuery: (a, b) => a.toString().toLowerCase().localeCompare(b.toString().toLowerCase())
+            }
+          })
+
+          // Setup the table
+          // trackData.value = response.tracks
+          searchedDateRange.value = { ...dateRange.value }
+          const rows = response.tracks.map(item => item.trackData)
+          setTableRows(rows)
+
+          // Hide the form and show the data
+          setShowForm(false)
+          showAnalytics.value = true
+
+        } else {
+          Notify.create({
+            message: 'No items were returned.',
+            color: 'warning'
+          })
+        }
+
       } finally {
         showSpinner.value = false
       }
     }
-
-
-    // const columns = ref([])
-    // const rows = ref([])
-    // const rowKey = ref()
-    // const nonFilteredTableRows = ref([])
-
-    // function updateColumns (rows) {
-
-    //   const savedCols = callRestApiStore.columns[baseUrl.value]
-    //   console.log(savedCols)
-    //   // Get all the keys available and use these as the columns
-    //   const cols = [...new Set(rows.flatMap(obj => Object.keys(obj)))]
-    //   console.log(cols)
-
-    //   const newColumns = []
-    //   columnTypeMenu.value = {}
-    //   for (const item of cols) {
-    //     const savedCol = savedCols?.find(c => c.name === item)
-    //     newColumns.push({
-    //       name: item,
-    //       label: item,
-    //       field: item,
-    //       formatType: savedCol ? savedCol.formatType : '',
-    //       align: 'left',
-    //       sortable: true
-    //     })
-    //     columnTypeMenu.value[item] = false
-    //   }
-    //   callRestApiStore.columns[baseUrl.value] = newColumns
-    //   return newColumns
-    // }
-
-    // function setTableRows (val) {
-    //   rows.value = [...val]
-    // }
-
-    // function setupTableData (response, key) {
-    //   nonFilteredTableRows.value = []
-    //   // if the response is a string, object or number, convert it to an array of objects
-    //   if (typeof response === 'string' || typeof response === 'number') {
-    //     response = response instanceof Number ? response.toString() : response
-    //     const rspToObj = {}
-    //     rspToObj[key] = response
-    //     response = [{ ...rspToObj }]
-    //   } else if (response instanceof Object && !(response instanceof Array)) {
-    //     response = [{ ...response }]
-    //   }
-    //   nonFilteredTableRows.value = [...response]
-    //   setTableRows(response)
-    // }
-
-
-    // function updateTable (key) {
-    //   console.log(apiResponse.value)
-    //   const rows = apiResponse.value[key]
-    //   setupTableData(rows, key)
-    //   // TODO: Update the columns
-    // }
 
     return {
       showForm,
@@ -397,23 +306,19 @@ export default defineComponent({
       dateRange,
       showSpinner,
 
-      pageViewsCanvas,
-      dayViewsCanvas,
-      userViewsCanvas,
-
       nonFilteredTableRows,
       tableRows,
       tableColumns,
       // rowKey,
       setTableRows,
 
-      trackData,
       searchedDateRange,
-      // columns,
-      // rows,
-      // rowKey,
-      // nonFilteredTableRows,
-      // setTableRows,
+      trackType,
+      trackTypeOptions,
+      tableTitle,
+      showAnalytics,
+      // chartData,
+      charts,
       getStellarAnalytics
       // updateTable
     }

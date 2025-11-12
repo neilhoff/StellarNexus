@@ -17,4 +17,9 @@ function formatDateString (val, formatStr, options = {}) {
   return formattedVal
 }
 
-export { formatDateString }
+function getYearMonth (date = new Date()) {
+  const d = new Date(date)
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
+}
+
+export { formatDateString, getYearMonth }

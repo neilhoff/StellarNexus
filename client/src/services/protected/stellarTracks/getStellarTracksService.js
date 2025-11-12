@@ -1,6 +1,13 @@
 import { ServiceHelpers } from 'src/services/serviceHelpers'
 
 const stellarTracksService = {
+  async getAnalytics (params) {
+    const serviceErrorObj = {
+      title: 'StellarTracksService: getAnalytics Error',
+      description: 'Error getting data from the api'
+    }
+    return ServiceHelpers.getFromApi(`${process.env.ARC_API_URL}/stellar-tracks`, params, {}, serviceErrorObj)
+  },
   async getPageViews (params) {
     const serviceErrorObj = {
       title: 'GetPageViewsAxiosError',
@@ -8,7 +15,7 @@ const stellarTracksService = {
     }
     const tableInfo = {
     }
-    params.trackType = 'pageViews'
+    params ? params.trackType = 'pageView' : {}
     return ServiceHelpers.getFromApi(`${process.env.ARC_API_URL}/stellar-tracks`, params, tableInfo, serviceErrorObj)
   }
 }
