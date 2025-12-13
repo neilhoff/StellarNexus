@@ -8,6 +8,7 @@
       <stellar-chart
         :chartType="chart.type"
         :data="chart.data"
+        :title="chart.title"
       />
     </div>
   </div>
@@ -35,8 +36,4 @@ export default defineComponent({
   }
 })
 </script>
-<style lang="scss" scoped>
-.chart {
-  // max-height: 200px;
-}
-</style>
+<style lang="scss" scoped></style>

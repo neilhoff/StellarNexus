@@ -1,70 +1,40 @@
 import axios from 'axios'
+import { useConfigStore } from 'src/stores/configStore.js'
+const configStore = useConfigStore()
+import { useAuthStore } from 'src/stores/authStore.js'
+const authStore = useAuthStore()
 
-function ServiceException (status, name, message, stack) {
-  this.status = status
-  this.name = name
-  this.message = message
-  this.stack = stack
-}
+async function getFromApi (url, params, tableInfo) {
+  // Send the session id and username for tracking errors
+  params.sessionId = configStore.stellarTrack.sessionId
+  params.userName = authStore.email
+  const response = await axios.get(url, {
+    headers: {
 
-const timeoutError = (stack, extraMessage = '') => {
-  throw new ServiceHelpers.ServiceException('TimeOutError', `The server returned a timeout error. ${extraMessage}`, stack)
-}
-
-function catchError (error, serviceErrorObj) {
-  if (error.name === 'AxiosError') {
-    let errorMessage
-    if (error.response?.data?.error) {
-      errorMessage = error.response.data.error
-    } else if (error.response?.data) {
-      errorMessage = JSON.stringify(error.response.data)
-    } else {
-      errorMessage = error.message
+    },
+    params: {
+      ...params
     }
-    throw new ServiceHelpers.ServiceException(
-      error.status,
-      serviceErrorObj.title,
-      errorMessage,
-      error.response
-    )
-  } else {
-    throw error
-  }
-}
-
-async function getFromApi (url, params, tableInfo, serviceErrorObj) {
-  try {
-    const response = await axios.get(url, {
-      headers: {
-
-      },
-      params: {
-        ...params
-      }
-    })
-    // Add Table info
-    if (tableInfo) {
-      for (const key in tableInfo) {
-        response.data[key] = tableInfo[key]
-      }
+  })
+  // Add Table info
+  if (tableInfo) {
+    for (const key in tableInfo) {
+      response.data[key] = tableInfo[key]
     }
-    return response.data
-  } catch (error) {
-    catchError(error, serviceErrorObj)
   }
+  return response.data
 }
 
-async function postToApi (url, params, serviceErrorObj) {
-  try {
-    const response = await axios.post(url, { ...params }, {
-      headers: {
+async function postToApi (url, params) {
+  // Send the session id and username for tracking errors
+  params.sessionId = configStore.stellarTrack.sessionId
+  params.userName = authStore.email
+  const response = await axios.post(url, { ...params }, {
+    headers: {
 
-      }
-    })
-    return response.data
-  } catch (error) {
-    catchError(error, serviceErrorObj)
-  }
+    }
+  })
+  return response.data
 }
 
 function sortDateString (a, b) {
@@ -74,8 +44,6 @@ function sortDateString (a, b) {
 }
 
 const ServiceHelpers = {
-  ServiceException,
-  timeoutError,
   getFromApi,
   postToApi,
   sortDateString

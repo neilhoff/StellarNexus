@@ -6,12 +6,27 @@ export const useConfigStore = defineStore('configStore', {
     leftDrawerOptions: ['max', 'mini', 'hidden'],
     leftDrawerState: 'mini',
     stellarTrack: {
-      deviceId: ''
+      deviceId: '',
+      sessionId: ''
     }
   }),
   getters: {
   },
   actions: {
   },
-  persist: true
+  persist: [
+    {
+      pick: [
+        'darkMode',
+        'leftDrawerOptions',
+        'leftDrawerState',
+        'stellarTrack.deviceId'
+      ],
+      storage: localStorage
+    },
+    {
+      pick: ['stellarTrack.sessionId'],
+      storage: sessionStorage,
+    }
+  ]
 })

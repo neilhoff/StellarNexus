@@ -12,10 +12,10 @@ let pendingClickContext = null
 let lastClickContext = null
 
 export default boot(async ({ app, router }) => {
+  const configStore = useConfigStore()
   // Cypress automatically sets window.Cypress by default
   if (window.Cypress) {
     const authStore = useAuthStore()
-    const configStore = useConfigStore()
     window.store = { authStore, configStore }
   }
 
@@ -61,18 +61,27 @@ export default boot(async ({ app, router }) => {
   app.config.errorHandler = (err, vm, info) => {
     // handle error
     // `info` is a Vue-specific error info, e.g. which lifecycle hook
-    // the error was found in. Only available in 2.2.0+
-    console.error(err)
+    // the error was found in.
 
-    // Use pending context (the EXACT click that caused the error)
+    // Use pending context (the click that caused the error)
     const clicked = pendingClickContext || lastClickContext
 
-    trackError(err, vm, info, clicked)
+    // Use the Axios response when there is an api error
+    err.name = err.name === 'AxiosError' ? 'API Error' : err.name
+    err.message = err.response?.data?.error ? err.response.data.error : err.message
+    err.correlationId = err.response?.data?.correlationId
+    console.dir(err)
 
+    // Save the error
+    trackError(err, vm, info, clicked, err.correlationId)
+
+    // Notify the user of the error
+    const correlationText = err.correlationId ? `<div style="font-size: .8rem; margin-top: 8px;">Correlation Id <br /> ${err.correlationId}</div>` : ''
     const notifyMessage = `
       <div style="font-size: 1.1rem; font-weight: bold;">${err.name}</div>
       <div style="font-size: .7rem; margin-bottom: 5px;">${new Date().toLocaleString()}</div>
-      <div>${err.message.substring(0, 300)}</div>
+      <div style="font-size: 1rem; margin-top: 8px;">${err.message.substring(0, 300)}</div>
+      ${correlationText}
       ${clicked?.dataCy ? `
         <div style="font-size: .8rem; margin-top: 8px;">
           <strong>Last Clicked:</strong> <code>${clicked.dataCy}</code>

@@ -1,13 +1,6 @@
 <template>
   <q-page>
     <page-header title="Stellar Tracks Analytics" />
-    <!-- <q-btn
-      color="primary"
-      data-cy="error-btn"
-      icon="check"
-      label="OK"
-      @click="console.log({}.x.y)"
-    /> -->
     <div class="row">
       <default-form
         class="col-8"
@@ -33,35 +26,12 @@
       class="q-mt-md"
       v-if="showAnalytics"
     >
-      <q-chip
-        color="primary"
-        outline
-        square
-        text-color="white"
-      >
-        {{ searchedDateRange.dateStart }} to {{ searchedDateRange.dateEnd }}
-      </q-chip>
+      <h3 class="q-mb-none q-pb-none">
+        Analytics Report for {{ searchedDateRange.dateStart }} to {{
+          searchedDateRange.dateEnd
+        }}
+      </h3>
       <chart-row :charts="charts" />
-      <!-- <div class="charts q-col-gutter-sm q-mt-sm row">
-        <div class="col-md-4 col-xs-12">
-          <stellar-chart
-            chartType="dayViews"
-            :data="chartData.dayViews"
-          />
-        </div>
-        <div class="col-md-4 col-xs-12">
-          <stellar-chart
-            chartType="pageViews"
-            :data="chartData.pageViews"
-          />
-        </div>
-        <div class="col-md-4 col-xs-12">
-          <stellar-chart
-            chartType="userViews"
-            :data="chartData.userViews"
-          />
-        </div>
-      </div> -->
     </div>
     <default-table
       class="q-mt-md q-mb-lg"
@@ -74,17 +44,6 @@
       @updateRows="setTableRows"
       :tableShow="showAnalytics"
     >
-      <!-- <template v-slot:body-cell-urlQuery="props">
-        <td :props="props">
-          <div
-            :key="item"
-            v-for="item of props.value"
-          >
-            {{ item }}
-
-          </div>
-        </td>
-      </template> -->
     </default-table>
     <q-inner-loading :showing="showSpinner">
       <default-spinner />
@@ -214,16 +173,13 @@ export default defineComponent({
         val: 'click'
       }
     ]
-    // const trackData = ref([])
     const searchedDateRange = ref({ dateStart: '', dateEnd: '' })
     const showAnalytics = ref(false)
     const tableTitle = ref()
-    // const chartData = ref({ pageViews: null, byDayViews: null, byUserViews: null })
     const charts = ref()
     async function getStellarAnalytics () {
       showSpinner.value = true
       showAnalytics.value = false
-      // trackData.value = []
       try {
         const response = await stellarTracksService.getAnalytics({ trackType: trackType.value, ...dateRange.value })
         console.log(response)
@@ -235,7 +191,8 @@ export default defineComponent({
           if (trackType.value === 'pageView') {
             charts.value = [
               {
-                type: 'dayViews',
+                type: 'byDay',
+                title: 'Views by Day',
                 data: response.summaryByDay
               },
               {
@@ -248,7 +205,6 @@ export default defineComponent({
               }
             ]
           } else if (trackType.value === 'click') {
-            console.log('clicks')
             charts.value = [
               {
                 type: 'clickView',
@@ -279,7 +235,6 @@ export default defineComponent({
           })
 
           // Setup the table
-          // trackData.value = response.tracks
           searchedDateRange.value = { ...dateRange.value }
           const rows = response.tracks.map(item => item.trackData)
           setTableRows(rows)
@@ -309,7 +264,6 @@ export default defineComponent({
       nonFilteredTableRows,
       tableRows,
       tableColumns,
-      // rowKey,
       setTableRows,
 
       searchedDateRange,

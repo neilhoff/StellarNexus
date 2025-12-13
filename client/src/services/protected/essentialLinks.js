@@ -61,7 +61,7 @@ export const essentialLinks = [
         title: 'Error Logs',
         icon: 'fas fa-exclamation-circle',
         link: {
-          location: '/admin/errorlogs',
+          location: '/p/admin/stellar-error-log',
           internal: true
         },
         authorized: true

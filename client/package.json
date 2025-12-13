@@ -19,6 +19,7 @@
     "axios": "^1.12.2",
     "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
+    "highlight.js": "^11.11.1",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.5.0",
     "quasar": "^2.18.5",

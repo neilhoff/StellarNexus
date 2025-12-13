@@ -4,26 +4,18 @@ import { useConfigStore } from 'src/stores/configStore.js'
 import { getWebSocketService } from 'src/boot/defaults.js'
 import { serializeError } from 'serialize-error'
 
-// Generate correlation ID once per session
-const sessionCorrelationId = crypto.randomUUID()
-// let lastClickedElement = null
-
 function getDefaultTrackingData () {
   const authStore = useAuthStore()
   const configStore = useConfigStore()
   const width = Screen.width
   const pInfo = { ...Platform.is }
 
-  // Setup the device Id
-  configStore.stellarTrack.deviceId =
-    configStore.stellarTrack.deviceId ?
-      configStore.stellarTrack.deviceId :
-      `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`
+  configStore.stellarTrack.deviceId = configStore.stellarTrack.deviceId ? configStore.stellarTrack.deviceId : crypto.randomUUID()
+  configStore.stellarTrack.sessionId = configStore.stellarTrack.sessionId ? configStore.stellarTrack.sessionId : crypto.randomUUID()
 
   return {
     browser: pInfo.name,
     browserVersion: pInfo.version,
-    correlationId: sessionCorrelationId,
     darkMode: configStore.darkMode,
     deviceId: configStore.stellarTrack.deviceId,
     deviceType: pInfo.mobile ? (width.value >= 600 && width.value <= 1024 ? 'tablet' : 'mobile') : 'desktop',
@@ -33,6 +25,7 @@ function getDefaultTrackingData () {
         (pInfo.ipad ? 'ipad' : pInfo.iphone ? 'iphone' : pInfo.kindle ? 'kindle' : pInfo.android ? 'android' : 'other') :
         '',
     os: pInfo.win ? 'windows' : pInfo.mac ? 'mac' : pInfo.android ? 'android' : pInfo.ios ? 'ios' : pInfo.linux ? 'linux' : pInfo.silk ? 'silk' : 'other',
+    sessionId: configStore.stellarTrack.sessionId,
     timeStamp: new Date().toISOString(),
     userName: authStore.email
   }
@@ -62,7 +55,6 @@ export async function trackPageView (to, from) {
   } catch (error) {
     console.error('Failed to send page view data:', error)
   }
-  console.log(pageViewData)
 }
 
 // Setup in src/boot/default.js
@@ -71,18 +63,6 @@ export async function trackPageView (to, from) {
 export function trackClicks (event, router) {
   // const stellarTrackItem = event.target.closest('[data-stellar-track]')
   const stellarTrackItem = event.target.closest('[data-cy]')
-
-  // Store for error logging
-  // const clickable = event.target.closest('[data-cy], [id], button, a, input, textarea')
-  // if (clickable) {
-  //   lastClickedElement = {
-  //     dataCy: clickable.dataset.cy || null,
-  //     id: clickable.id || null,
-  //     className: clickable.className || null,
-  //     tagName: clickable.tagName,
-  //     text: clickable.innerText?.trim() || clickable.value || null
-  //   }
-  // }
 
   if (stellarTrackItem) {
     const route = router?.currentRoute.value
@@ -95,25 +75,25 @@ export function trackClicks (event, router) {
       urlQuery: route?.query,
       ...getDefaultTrackingData()
     }
-    console.log(clickData)
     try {
       const webSocket = getWebSocketService()
       if (!webSocket.isConnected()) {
         webSocket.connect()
       }
-
       webSocket.send('stellar-track', { type: 'click', data: clickData })
     } catch (error) {
-      console.error('Failed to send click data:', error)
+      console.log('Failed to send click data:', error)
     }
   }
 }
 
-export async function trackError (err, vm, info, lastClickedElement = null) {
+export async function trackError (err, vm, info, lastClickedElement, correlationId) {
+  console.dir(err)
   const sError = serializeError(err)
   const errorObj = {
     // Error core
     error: sError,
+    correlationId,
     component: vm?.$options?.name || vm?.$options?._componentTag || 'Unknown',
     elClassName: vm?.$el?.className || null,
     vueInfo: info,
@@ -131,7 +111,6 @@ export async function trackError (err, vm, info, lastClickedElement = null) {
     // Merge default tracking data (device, user, etc.)
     ...getDefaultTrackingData()
   }
-  console.log(JSON.stringify(errorObj))
   try {
     const webSocket = getWebSocketService()
     if (!webSocket.isConnected()) {

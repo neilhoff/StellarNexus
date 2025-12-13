@@ -26,6 +26,9 @@ export default defineComponent({
     },
     data: {
       type: Object
+    },
+    title: {
+      type: String
     }
   },
   setup (props) {
@@ -33,8 +36,15 @@ export default defineComponent({
     const chartCanvas = ref(null)
     const chartJs = ref(null)
 
-    function setChart (data, chartType, chartLabel, dataLimit = null, labelsFunc = null, dataFunc = null) {
-      let sortedData = Object.entries(data).sort((a, b) => b[1] - a[1])
+    function setChart (data, chartType, chartLabel, options = { dataLimit: null, labelsFunc: null, dataFunc: null, sortFunc: null }) {
+      const { dataLimit, labelsFunc, dataFunc, sortFunc } = options
+      let sortedData
+      if (!sortFunc) {
+        sortedData = Object.entries(data).sort((a, b) => b[1] - a[1])
+      } else {
+        sortedData = sortFunc(data)
+      }
+
       if (dataLimit) {
         sortedData = sortedData.slice(0, dataLimit)
       }
@@ -56,43 +66,51 @@ export default defineComponent({
       chartJs.value = new Chart(chartCanvas.value, config)
     }
 
+    // Charts used in multiple scenarios
+    const commonChartOptions = [
+      {
+        val: 'byDay',
+        title: props.title,
+        setChart: () => setChart(props.data, 'line', 'Views',
+          {
+            labelsFunc: (labels) => {
+              return labels.map(date => {
+                // Convert date from YYYY/MM/DD to MM/DD/YY
+                const dateObj = new Date(date)
+                const d = formatHelper.formatDateString(dateObj, { formatStr: 'M/dd/yy' }).formattedVal
+                return d
+              })
+            },
+            dataFunc: (dataValues) => dataValues.map(d => d.total),
+            sortFunc: (data) => Object.entries(data).sort((a, b) => new Date(a[0]) - new Date(b[0]))
+          })
+      },
+    ]
     // Click Charts
     const clickChartOptions = [
       {
         val: 'clickView',
         title: 'Top 5 Clicks',
-        setChart: () => setChart(props.data, 'bar', 'Clicks', 5)
+        setChart: () => setChart(props.data, 'bar', 'Clicks', { dataLimit: 5 })
       }
     ]
-
     // Page Charts
     const pageChartOptions = [
       {
         val: 'pageViews',
         title: 'Top 5 Pages',
-        setChart: () => setChart(props.data, 'bar', 'Views', 5)
-      },
-      {
-        val: 'dayViews',
-        title: 'Views by Day',
-        setChart: () => setChart(props.data, 'line', 'Views', 5, (labels) => {
-          return labels.map(date => {
-            // Convert date from YYYY/MM/DD to MM/DD/YY
-            const dateObj = new Date(date)
-            const d = formatHelper.formatDateString(dateObj, { formatStr: 'M/dd/yy' }).formattedVal
-            return d
-          })
-        }, (dataValues) => dataValues.map(d => d.total))
+        setChart: () => setChart(props.data, 'bar', 'Views', { dataLimit: 5 })
       },
       {
         val: 'userViews',
         title: 'Top 5 Users',
-        setChart: () => setChart(props.data, 'bar', 'Views', 5)
+        setChart: () => setChart(props.data, 'bar', 'Views', { dataLimit: 5 })
       },
     ]
 
     // Chart Utilities
     const chartOptions = [
+      ...commonChartOptions,
       ...pageChartOptions,
       ...clickChartOptions
     ]
@@ -176,8 +194,4 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
-.chart {
-  // max-height: 200px;
-}
-</style>
+<style lang="scss" scoped></style>

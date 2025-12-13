@@ -20,7 +20,8 @@ const routes = [
     path: '/p/admin',
     component: () => import('layouts/ProtectedLayout.vue'),
     children: [
-      { path: '/p/admin/stellar-analytics', component: () => import('pages/protected/admin/StellarTracks/StellarAnalytics.vue') }
+      { path: '/p/admin/stellar-analytics', component: () => import('pages/protected/admin/StellarTracks/StellarAnalytics.vue') },
+      { path: '/p/admin/stellar-error-log', component: () => import('pages/protected/admin/StellarTracks/StellarErrorLog.vue') }
     ],
     meta: { requiresAuth: true, requiresAdmin: true } //TODO: Setup admin authorizations
   },

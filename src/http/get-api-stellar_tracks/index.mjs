@@ -1,6 +1,7 @@
 import arc from '@architect/functions'
 import { allShards, pLimit } from '@architect/shared/tableHelper.mjs'
 import { getYearMonth } from '@architect/shared/format.mjs'
+import { logError } from '@architect/shared/stellarErrorLogger.mjs'
 
 const pluralMap = {
   userName: 'userNames',
@@ -28,7 +29,6 @@ function endOfDayUTC (date = new Date()) {
 async function getTracks (trackType, startDate, endDate) {
   const db = await arc.tables()
   const table = db.stellarTracks
-  console.log(startDate)
   const start = new Date(startDate)
   const end = endOfDayUTC(new Date(endDate))
 
@@ -40,7 +40,7 @@ async function getTracks (trackType, startDate, endDate) {
     cur.setUTCDate(cur.getUTCDate() + 1)
   }
 
-  const tracks = []
+  let tracks = []
   const limit = pLimit(25)  // 25 parallel queries max (DynamoDB + Lambda safe)
 
   const promises = []
@@ -51,30 +51,20 @@ async function getTracks (trackType, startDate, endDate) {
     const queryStart = start > monthStart ? start : monthStart
     const queryEnd = end < monthEnd ? end : monthEnd
 
-    console.log(queryStart.toISOString())
-    console.log(queryEnd.toISOString())
-
     for (const shard of allShards()) {
       const pk = `${trackType}#${shard}#${month}`
-      // console.log(pk)
-
       promises.push(
         limit(async () => {
-          try {
-            const result = await table.query({
-              KeyConditionExpression: 'pk = :pk AND sk BETWEEN :start AND :end',
-              ExpressionAttributeValues: {
-                ':pk': pk,
-                ':start': queryStart.toISOString(),
-                ':end': queryEnd.toISOString()
-              }
-            })
-            // console.log(result)
-            if (result.Items) {
-              tracks.push(...result.Items)
+          const result = await table.query({
+            KeyConditionExpression: 'pk = :pk AND sk BETWEEN :start AND :end',
+            ExpressionAttributeValues: {
+              ':pk': pk,
+              ':start': queryStart.toISOString(),
+              ':end': queryEnd.toISOString()
             }
-          } catch (err) {
-            console.error(`Query failed for ${pk}:`, err)
+          })
+          if (result.Items) {
+            tracks.push(...result.Items)
           }
         })
       )
@@ -82,14 +72,12 @@ async function getTracks (trackType, startDate, endDate) {
   }
 
   await Promise.all(promises)
-  // console.log('tracks', tracks)
   // Sort once
   tracks.sort((a, b) => {
     const aTime = a.trackData?.timeStamp || a.errorData?.timeStamp
     const bTime = b.trackData?.timeStamp || b.errorData?.timeStamp
-    return new Date(aTime) - new Date(bTime)
+    return new Date(bTime) - new Date(aTime)
   })
-
   return tracks
 }
 
@@ -127,9 +115,10 @@ function convertMapToObject (sMap) {
 }
 
 function getSummary (tracks) {
-  const totalViews = tracks.length
+  const tracksCopy = [...tracks]
+  const total = tracksCopy.length
   const viewTotals = {
-    totalViews,
+    total,
     summaryByDay: new Map()
   }
   const propertyCounts = new Map()
@@ -138,7 +127,11 @@ function getSummary (tracks) {
     summaryBy[key] = new Map()
   })
 
-  for (const { trackData: td } of tracks) {
+  for (const item of tracksCopy) {
+    const td = item.trackData ?? item.errorData
+    if (!td) {
+      continue
+    }
     // Setup daily summary
     const day = td.timeStamp.slice(0, 10).replace(/-/g, '/') // Optimize: yyyy/M/dd
     const dayMap = getSummaryMap(viewTotals.summaryByDay, day)
@@ -173,7 +166,7 @@ function getSummary (tracks) {
   }
 
   // Convert Maps to objects for return
-  const result = { totalViews, summary: {}, summaryByDay: {}, summaryBy: {} }
+  const result = { total, summary: {}, summaryByDay: {}, summaryBy: {} }
   // overall summary
   for (const [key, map] of propertyCounts) {
     result.summary[key] = Object.fromEntries(map)
@@ -189,33 +182,28 @@ function getSummary (tracks) {
   return result
 }
 
-async function getStellarTracks (req) {
-  const { trackType, dateStart, dateEnd } = req.queryStringParameters || {}
-  // console.log('end', dateEnd, dateStart, trackType)
-  if (!trackType) {
-    return {
-      cors: true,
-      statusCode: 400,
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ error: 'trackType query parameter is required' })
-    }
-  }
-
-  const endDate = dateEnd || new Date().toISOString()
-  const startDate = dateStart || new Date(new Date(endDate).setDate(new Date(endDate).getDate() - 6)).toISOString()
-
+async function getStellarTracks (req, context) {
   try {
-    // const startTime = Date.now()
-    const tracks = await getTracks(trackType, startDate, endDate)
+    const { trackType, dateStart, dateEnd } = req.queryStringParameters || {}
+    if (!trackType) {
+      return {
+        cors: true,
+        statusCode: 400,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ error: 'trackType query parameter is required' })
+      }
+    }
 
-    const summary = getSummary(tracks)
+    const endDate = dateEnd || new Date().toISOString()
+    const startDate = dateStart || new Date(new Date(endDate).setDate(new Date(endDate).getDate() - 6)).toISOString()
+    const tracks = await getTracks(trackType, startDate, endDate)
+    let summary = {}
+    summary = getSummary(tracks)
 
     const returnObj = {
       tracks,
       ...summary
     }
-    // console.log(returnObj)
-    // console.log(`Processed ${tracks.length} tracks in ${Date.now() - startTime} ms`)
     return {
       cors: true,
       statusCode: 200,
@@ -223,12 +211,11 @@ async function getStellarTracks (req) {
       body: JSON.stringify(returnObj)
     }
   } catch (error) {
-    console.error('Query failed:', error)
+    const correlationId = await logError(error, 'server', null, { req, context })
     return {
+      body: JSON.stringify({ correlationId, error: `Server Error: Failed to retrieve the log. Please try again later.` }),
       cors: true,
-      statusCode: 500,
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ error: 'Failed to retrieve tracks' })
+      statusCode: 500
     }
   }
 }
