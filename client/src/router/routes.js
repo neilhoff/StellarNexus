@@ -12,7 +12,8 @@ const routes = [
     component: () => import('layouts/ProtectedLayout.vue'),
     children: [
       { path: '', component: () => import('pages/protected/IndexPage.vue') },
-      { path: '/p/call-rest-api', component: () => import('pages/protected/callRestApi/CallRestApi.vue') }
+      { path: '/p/call-rest-api', component: () => import('pages/protected/callRestApi/CallRestApi.vue') },
+      { path: '/p/stellar-chat', component: () => import('pages/protected/stellarChat/StellarChat.vue') }
     ],
     meta: { requiresAuth: true }
   },

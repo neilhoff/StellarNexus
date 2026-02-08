@@ -1,4 +1,4 @@
-import { addDays, subDays, format } from 'date-fns'
+import { addDays, subDays, format, formatDistanceToNow } from 'date-fns'
 
 function getInitialFormatObj (val) {
   return {
@@ -95,6 +95,24 @@ function formatPercent (val, options) {
   return formatObj
 }
 
+function getRelativeTimeStamp (timestamp) {
+  try {
+    return formatDistanceToNow(new Date(timestamp), { addSuffix: true })
+  } catch (error) {
+    console.error('Error formatting timestamp:', error)
+    return timestamp
+  }
+}
+
+function formatDateLabel (timestamp, formatStr = 'EEEE, do') {
+  try {
+    return format(new Date(timestamp), formatStr)
+  } catch (error) {
+    console.error('Error formatting date label:', error)
+    return timestamp
+  }
+}
+
 export default {
   getFormatted,
   formatColorSquare,
@@ -102,5 +120,7 @@ export default {
   formatDateString,
   formatImage,
   formatLink,
-  formatPercent
+  formatPercent,
+  getRelativeTimeStamp,
+  formatDateLabel
 }

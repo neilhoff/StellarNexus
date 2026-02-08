@@ -5,7 +5,7 @@ import {
   CognitoUserAttribute,
 } from 'amazon-cognito-identity-js'
 
-// Replace with your Cognito User Pool details
+// Cognito User Pool details
 const poolData = {
   UserPoolId: process.env.COGNITO_USER_POOL_ID, // Your User Pool ID
   ClientId: process.env.COGNITO_CLIENT_ID, // Your App Client ID

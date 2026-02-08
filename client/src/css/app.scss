@@ -67,6 +67,19 @@ a {
   height: 50%
 }
 
+.sn-border {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+}
+
+.sn-border-bottom {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12)
+}
+
+.sn-border-top {
+  border-top: 1px solid rgba(0, 0, 0, 0.12)
+}
+
 // .sn-section-full-height {
 //   // display: flex;
 //   // flex-direction: column;

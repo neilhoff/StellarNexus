@@ -31,6 +31,15 @@ export const essentialLinks = [
           internal: true
         },
         authorized: true
+      },
+      {
+        title: 'Stellar Chat',
+        icon: 'fa-regular fa-comments',
+        link: {
+          location: '/p/stellar-chat',
+          internal: true
+        },
+        authorized: true
       }
     ]
   },

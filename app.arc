@@ -16,6 +16,7 @@ connect
 disconnect
 broadcast-update
 stellar-track
+chat
 
 @tables
 stellarTracks
@@ -25,6 +26,9 @@ stellarTracks
 connections
   connectionId *String
   expires TTL
+chat
+  pk *String
+  sk **String
 
 @tables-streams
 connections

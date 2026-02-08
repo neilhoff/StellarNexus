@@ -1,11 +1,11 @@
 import arc from '@architect/functions'
-import { getRandomShard } from '@architect/shared/tableHelper.mjs'
+import { blankToNull, getRandomShard } from '@architect/shared/tableHelper.mjs'
 import { getYearMonth } from '@architect/shared/format.mjs'
 import { logError } from '@architect/shared/stellarErrorLogger.mjs'
 
 export async function handler (event) {
   const body = JSON.parse(event.body)
-  const trackData = body.data
+  const trackData = blankToNull(body.data)
   const type = trackData.type || 'track'
   trackData.data.side = 'client'
 

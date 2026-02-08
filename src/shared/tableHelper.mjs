@@ -20,7 +20,7 @@ function* allShards () {
 
 // A Simple "Promise Concurrency Limiter"
 function pLimit (concurrency) { // DynamoDB + Lambda safe at around concurrency <= 25
-  const queue = []      // tasks waiting to run
+  const queue = []      // items waiting to run
   let active = 0        // how many are running right now
 
   const run = (fn) => {               // this is the function we return

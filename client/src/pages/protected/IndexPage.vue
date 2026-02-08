@@ -1,26 +1,24 @@
 <template>
   <q-page>
-    <div>
-      <page-header :title="siteName" />
-      <div
-        :key="linkGroup.title"
-        v-for="linkGroup in authorizedLinkGroups"
-      >
-        <div v-if="linkGroup.title">
-          <div class="row q-mb-sm">
-            <h2 class="col q-mt-none">
-              {{ linkGroup.title }}
-            </h2>
-          </div>
-          <div class="row q-mb-md">
-            <EssentialCard
-              :bgColor="linkGroup.bgColor"
-              :display="link.authorized"
-              :key="link.title"
-              v-bind="link"
-              v-for="link in linkGroup.links"
-            />
-          </div>
+    <page-header :title="siteName" />
+    <div
+      :key="linkGroup.title"
+      v-for="linkGroup in authorizedLinkGroups"
+    >
+      <div v-if="linkGroup.title">
+        <div class="row q-mb-sm">
+          <h2 class="col q-mt-none">
+            {{ linkGroup.title }}
+          </h2>
+        </div>
+        <div class="row q-mb-md">
+          <EssentialCard
+            :bgColor="linkGroup.bgColor"
+            :display="link.authorized"
+            :key="link.title"
+            v-bind="link"
+            v-for="link in linkGroup.links"
+          />
         </div>
       </div>
     </div>
