@@ -1,5 +1,9 @@
 <template>
-  <q-header class="q-mb-lg">
+  <q-header
+    class="q-mb-lg page-header"
+    :class="titleBarClass"
+    bordered
+  >
     <q-toolbar :class="titleBarClass">
       <q-btn
         aria-label="Menu"
@@ -14,11 +18,11 @@
       />
       <q-toolbar-title data-cy="page-title">
         <h1
-          class="q-mb-sm"
+          class="q-mb-sm page-title"
           :class="titleTextClass"
         >{{ title }}
           <span
-            style="font-size: 1rem;"
+            class="env-badge"
             v-if="env !== 'production'"
           >{{ env }}</span>
         </h1>
@@ -74,12 +78,40 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
+.page-header {
+  height: 64px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
 .title-light-mode {
-  background-color: #ffffff;
+  background-color: $card-bg;
+  border-bottom: 1px solid $sn-border;
 }
 
 .title-dark-mode {
-  background-color: #121212;
-  color: #ffffff;
+  background-color: $dark-surface;
+  border-bottom: 1px solid $dark-border;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.env-badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: $surface;
+  color: $text-muted;
+  margin-left: 8px;
+  font-weight: 500;
+}
+
+body.body--dark .env-badge {
+  background-color: $dark-elevated;
+  color: $dark-text-muted;
 }
 </style>

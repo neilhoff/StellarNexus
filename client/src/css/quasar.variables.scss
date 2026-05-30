@@ -12,29 +12,78 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
-$primary : #345995;
+// Primary palette
+$primary : #1B3A5C;
+$primary-hover: #142E4A;
 $accent : #FF5E5B;
-$secondary: #D3D9E3;
-// $secondary : #00CECB;
+$accent-hover: #E04E4B;
+$secondary: #CBD5E1;
 $secondary2 : #FFED66;
 $primary-white: #FFFFEA;
 
+// Surface & background (FlowAI-inspired)
+$background: #F5F7FA;
+$card-bg: #FFFFFF;
+$surface: #E8ECF1;
+
+// Text hierarchy (FlowAI-inspired)
+$text-primary: #1A2332;
+$text-secondary: #4A5568;
+$text-muted: #8896A6;
+
+// Legacy color tokens
 $off-white: #fafafa;
-
 $font : #333;
+$heading: #2C3539;
 
+// Dark mode surfaces
 $dark : #1D1D1D;
+$dark-surface: #121212;
+$dark-elevated: #1e1e1e;
+$dark-card-bg: #1E2228;
+$dark-border: rgba(255, 255, 255, 0.08);
+$dark-text-primary: #E8ECF1;
+$dark-text-secondary: #8896A6;
+$dark-text-muted: #5A6678;
+$dark-nav-active-bg: #1E3A5F;
+$dark-nav-active-text: #4A7ABF;
+$dark-table-row-hover: #1a2537;
 
-$positive : #21BA45;
+// Semantic colors
+$positive : #2ECC71;
 $negative : #ef4637;
 $info : #31CCEC;
 $warning : #F2C037;
 
+// Chart colors
+$chart-blue: rgba(54, 162, 235, 0.6);
+$chart-blue-border: rgba(54, 162, 235, 1);
 
+// Borders
+$sn-border: rgba(0, 0, 0, 0.08);
+$table-row-hover: #EDF2F7;
+
+// Utility classes
 .bg-secondary2 {
   background-color: $secondary2;
 }
 
 .bg-primary-white {
   background-color: $primary-white;
+}
+
+.bg-accent-hover:hover {
+  background-color: $accent-hover;
+}
+
+.bg-surface {
+  background-color: $surface;
+}
+
+.bg-card {
+  background-color: $card-bg;
+}
+
+.bg-background {
+  background-color: $background;
 }

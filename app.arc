@@ -8,6 +8,11 @@ region us-west-2
 @http
 get /api/call-api
 get /api/stellar-tracks
+get /api/admin/users
+
+post /api/admin/users/update
+post /api/admin/users/disable
+post /api/users/sync
 
 options /api/*
 
@@ -16,7 +21,6 @@ connect
 disconnect
 broadcast-update
 stellar-track
-chat
 
 @tables
 stellarTracks
@@ -26,12 +30,13 @@ stellarTracks
 connections
   connectionId *String
   expires TTL
-chat
+users
   pk *String
   sk **String
 
-@tables-streams
+@indexes
 connections
+  email *String
 
 @shared
 

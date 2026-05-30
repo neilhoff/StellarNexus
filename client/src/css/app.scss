@@ -1,25 +1,40 @@
 // app global css in SCSS form
 @import './fonts.scss';
 
+// ============================================
+// Body & Base
+// ============================================
+
 body {
-  color: $font;
+  color: $text-primary;
+  background-color: $background;
 }
 
 body.body--light {
-  color: $font;
+  color: $text-primary;
+  background-color: $background;
 }
 
 body.body--dark {
-  color: $primary-white;
+  color: $dark-text-primary;
+  background-color: $dark-surface;
 }
+
+// ============================================
+// Typography
+// ============================================
 
 h1,
 .text-h1 {
-  color: #2C3539;
-  // font-family: 'Impact';
+  color: $text-primary;
   font-size: 2rem;
   line-height: 3rem;
   margin-top: 10px;
+}
+
+body.body--dark h1,
+body.body--dark .text-h1 {
+  color: $dark-text-primary;
 }
 
 h2,
@@ -43,79 +58,114 @@ h4,
   margin-top: 0;
 }
 
+// Text hierarchy utilities
+.text-secondary {
+  color: $text-secondary;
+}
+
+.text-muted {
+  color: $text-muted;
+}
+
+body.body--dark .text-secondary {
+  color: $dark-text-secondary;
+}
+
+body.body--dark .text-muted {
+  color: $dark-text-muted;
+}
+
+// Metric label style (uppercase + letter-spacing)
+.metric-label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+body.body--dark .metric-label {
+  color: $dark-text-muted;
+}
+
+// ============================================
+// Links
+// ============================================
+
 a {
   color: $primary;
   text-decoration: none;
 }
 
+// ============================================
+// Color Utilities
+// ============================================
+
 .font-primary {
-  color: $font
+  color: $text-primary;
 }
 
 .font-dark-mode {
-  color: $primary-white;
+  color: $dark-text-primary;
 }
 
 .text-primary-white {
   color: $primary-white;
 }
 
-.sign-in-spinner-box {
-  align-items: center;
-  justify-content: center;
-  width: 70%;
-  height: 50%
-}
+// ============================================
+// Borders
+// ============================================
 
 .sn-border {
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid $sn-border;
   border-radius: 4px;
 }
 
 .sn-border-bottom {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12)
+  border-bottom: 1px solid $sn-border;
 }
 
 .sn-border-top {
-  border-top: 1px solid rgba(0, 0, 0, 0.12)
+  border-top: 1px solid $sn-border;
 }
 
-// .sn-section-full-height {
-//   // display: flex;
-//   // flex-direction: column;
-//   // height: calc(100vh - 60px); // the top menu bar is 60px;
-//   // width: 100%;
-//   // position: relative;
+// ============================================
+// Elevation (FlowAI-inspired shadows)
+// ============================================
 
-//   .sn-section-content {
-//     // display: flex;
-//     // height: calc(100vh);
-//     // width: 100%;
+.sn-card {
+  background-color: $card-bg;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
 
-//     .sn-bottom-right-img {
-//       // position: absolute;
-//       // bottom: 0;
-//       // right: 0;
-//       // height: auto;
-//       // width: 1000px;
+.sn-card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
 
-//       // width: 1000px;
-//       // display: flex;
-//       // height: auto;
-//       // justify-content: flex-end;
-//       // align-items: flex-end;
-//       // width: 100%;
+.sn-card-elevated {
+  background-color: $card-bg;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
 
-//       img {
-//         width: 100%;
-//       }
-//     }
-//   }
+body.body--dark .sn-card,
+body.body--dark .sn-card-elevated {
+  background-color: $dark-card-bg;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
 
-//   .sn-banner-heading {
-//     z-index: 5;
-//   }
-// }
+body.body--dark .sn-card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+// ============================================
+// Sections
+// ============================================
 
 .sn-section {
   display: flex;
@@ -153,4 +203,50 @@ a {
       width: 100%;
     }
   }
+}
+
+// ============================================
+// Misc Utilities
+// ============================================
+
+.sign-in-spinner-box {
+  align-items: center;
+  justify-content: center;
+  width: 70%;
+  height: 50%;
+}
+
+// Pill-shaped elements
+.sn-pill {
+  border-radius: 9999px;
+}
+
+// Tag base style
+.sn-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  background-color: $surface;
+  color: $text-secondary;
+}
+
+body.body--dark .sn-tag {
+  background-color: $dark-elevated;
+  color: $dark-text-secondary;
+}
+
+// Table card wrapper
+.sn-table-card {
+  background-color: $card-bg;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+body.body--dark .sn-table-card {
+  background-color: $dark-card-bg;
 }

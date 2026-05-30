@@ -1,7 +1,7 @@
 import { defineRouter } from '#q-app/wrappers'
 import { createRouter, createMemoryHistory, createWebHistory, createWebHashHistory } from 'vue-router'
 import routes from './routes'
-import { isAuthenticated } from 'src/services/auth/cognitoService'
+import { hasAdminAccess, isAuthenticated } from 'src/services/auth/cognitoService'
 import { trackPageView } from 'src/services/stellarTrack.js'
 
 /*
@@ -38,6 +38,13 @@ export default defineRouter(function (/* { store, ssrContext } */) {
         path: '/auth/signin',
         query: { redirect: to.fullPath }, // Preserve intended route
       })
+    }
+
+    if (to.meta.requiresAdmin) {
+      const isAdmin = await hasAdminAccess()
+      if (!isAdmin) {
+        return next('/p')
+      }
     }
 
     // If the user is authenticated and tries to access login, redirect to protected

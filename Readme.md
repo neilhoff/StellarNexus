@@ -5,22 +5,35 @@
 Powered by [Quasar](https://quasar.dev) as the front-end and [Architect](https://arc.codes) as a serverless backend, StellarNexus aims to make it easy for developers to start building
 a full-stack application. Follow the "New Project Steps" below to setup a new site.
 
+## Recommended First Step: Run Onboarding
+
+After cloning/forking, run:
+
+```
+npm run onboard
+```
+
+The onboarding flow asks guided questions so setup is repeatable and less error-prone.
+It updates project naming, metadata, Architect app settings, and client env files.
+It can verify your local dev tooling and bootstrap Cognito (existing pool or new pool/client),
+create/ensure `super-admin` + `admin` groups, and optionally create the initial `super-admin` user.
+
+Why this matters:
+- Reduces manual copy/paste mistakes during new site setup
+- Makes bootstrap steps auditable and consistent with `Agent.md`
+- Helps ensure privileged-role setup is done in Cognito, not ad hoc local state
+
 ## New Project Steps
 
 - Fork this project
   - To fork into a private repo do a [bare clone & mirror push](https://stackoverflow.com/a/16554601/756623)
-- Change `app.arc`
-    - @app - To the name of your app
-- Change `package.json`
-    - name
-    - description
-- Change `/client/package.json`
-    - productName
-    - description
-- Copy `/client/.env-template` to `/client/.env` and update
+- Run `npm run onboard` from the project root
+    - Prompts for site name, app identifier, `@app` (snake_case), AWS profile/region
+    - Updates `package.json`, `client/package.json`, `app.arc`, and `client/.env*`
+    - Creates `client/.env` from `client/.env.template` if missing
+    - Supports Cognito bootstrap (existing or newly created user pool/client)
 - Update the Drawer Logos `client/public`
 - Update the title, logo and description in this readme file
-- Remove "New Project Steps" from this readme file
 - Go through the **Development Environment Setup** steps below
 
 ## Pulling Updates From The Template
@@ -80,6 +93,9 @@ aws_secret_access_key=xxx
     - Run `arc hydrate` from the root of the project
         - This command runs `npm install` for each http function (each folder in /src/http)
   	- Run `npm install` in the `client` folder
+- Run guided onboarding from the root:
+    - `npm run onboard`
+    - Use this to validate tooling and configure app metadata + Cognito bootstrap
 - Start the client and server for development
     - From the root folder: `npm start`
 - Client is located at http://localhost:9000
@@ -174,6 +190,21 @@ arc deploy --production
 ### Create a User Pool
  
  - Manages users (sign-up, sign-in, MFA)
+
+### Admin and Super-Admin Bootstrap (Template Setup)
+
+- Create Cognito groups for privileged roles:
+    - `super-admin`
+    - `admin`
+- Bootstrap one initial `super-admin` during site setup.
+    - This should be done once per new site.
+    - Prefer a scripted setup flow (CLI/API) over manual console edits so it is repeatable.
+- After bootstrap, use app admin APIs to grant/revoke admin access.
+    - These APIs should update Cognito group membership behind the scenes.
+    - Avoid relying on DynamoDB-only role flags for privileged access.
+- Disabling sign-in should call Cognito disable operations.
+    - App table `disabled` fields are useful for UI and auditing, but Cognito remains enforcement.
+- Keep bootstrap and role-management rules in `Agent.md` and `.github/copilot-instructions.md` aligned.
 
 #### Notes
 

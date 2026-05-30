@@ -1,5 +1,12 @@
 import { defineStore } from 'pinia'
 import { cognitoSignIn, cognitoSignOut, getUserAttributes, refreshSession } from 'src/services/auth/cognitoService.js'
+import { userSyncService } from 'src/services/protected/users/userSyncService.js'
+
+function getAttributeValue (attributes, key) {
+  if (!Array.isArray(attributes)) return ''
+  const attribute = attributes.find((item) => item?.getName?.() === key)
+  return attribute?.getValue?.() || ''
+}
 
 export const useAuthStore = defineStore('authStore', {
   state: () => ({
@@ -24,6 +31,12 @@ export const useAuthStore = defineStore('authStore', {
         this.email = email
         this.staySignedIn = staySignedIn
         this.userAttributes = await getUserAttributes()
+        const givenName = getAttributeValue(this.userAttributes, 'given_name')
+        const familyName = getAttributeValue(this.userAttributes, 'family_name')
+        const displayName = `${givenName} ${familyName}`.trim() || this.email
+
+        await userSyncService.syncCurrentUser(displayName)
+
         if (staySignedIn) {
           this.refreshToken = result.refreshToken
           this.sessionExpiresAt = new Date().getTime() + 7 * 24 * 60 * 60 * 1000 // 1 week
@@ -44,6 +57,13 @@ export const useAuthStore = defineStore('authStore', {
         this.accessToken = result.accessToken
         this.idToken = result.idToken
         this.refreshToken = result.refreshToken
+
+        const givenName = getAttributeValue(this.userAttributes, 'given_name')
+        const familyName = getAttributeValue(this.userAttributes, 'family_name')
+        const displayName = `${givenName} ${familyName}`.trim() || this.email
+
+        await userSyncService.syncCurrentUser(displayName)
+
         return result
       } catch (err) {
         this.signOut()

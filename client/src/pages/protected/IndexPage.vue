@@ -26,9 +26,10 @@
 </template>
 
 <script>
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 import EssentialCard from './components/EssentialCard.vue'
-import { essentialLinks } from 'src/services/protected/essentialLinks.js'
+import { getAuthorizedLinkGroups } from 'src/services/protected/essentialLinks.js'
+import { hasAdminAccess } from 'src/services/auth/cognitoService'
 import PageHeader from 'src/components/PageHeader.vue'
 
 export default defineComponent({
@@ -39,9 +40,18 @@ export default defineComponent({
   },
   setup () {
     const siteName = process.env.APP_DISPLAY_NAME
+    const isAdmin = ref(false)
+
+    onMounted(async () => {
+      try {
+        isAdmin.value = await hasAdminAccess()
+      } catch {
+        isAdmin.value = false
+      }
+    })
 
     return {
-      authorizedLinkGroups: computed(() => essentialLinks.filter(lg => lg.authorized)),
+      authorizedLinkGroups: computed(() => getAuthorizedLinkGroups(isAdmin.value)),
       siteName
     }
   }

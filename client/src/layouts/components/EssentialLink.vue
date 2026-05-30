@@ -160,4 +160,24 @@ export default {
   height: 30px;
   width: 30px;
 }
+
+:deep(.left-drawer-active-class) {
+  background-color: rgba(45, 74, 125, 0.12);
+  border-radius: 8px;
+  color: $primary;
+
+  .q-item__label {
+    color: $primary;
+    font-weight: 500;
+  }
+}
+
+body.body--dark :deep(.left-drawer-active-class) {
+  background-color: $dark-nav-active-bg;
+  color: $dark-nav-active-text;
+
+  .q-item__label {
+    color: $dark-nav-active-text;
+  }
+}
 </style>

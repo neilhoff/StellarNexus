@@ -2,13 +2,13 @@
   <q-layout view="lHh Lpr lff">
 
     <q-page-container>
-      <q-header>
-        <q-toolbar class="bg-primary text-primary-white">
+      <q-header class="public-header">
+        <q-toolbar>
           <img
             class="stellar-nexus-logo"
             src="~/assets/logos/StellarNexusLogo2.svg"
           >
-          <q-toolbar-title>
+          <q-toolbar-title class="public-toolbar-title">
             Stellar Nexus
           </q-toolbar-title>
 
@@ -25,15 +25,14 @@
 
       <router-view />
 
-      <q-footer>
-        <q-toolbar class="bg-primary q-py-md text-primary-white">
+      <q-footer class="public-footer">
+        <q-toolbar>
           <q-btn
             flat
             href="https://github.com/neilhoff/StellarNexus"
             icon="fab fa-github"
             label="Fork the project on Github"
             size="md"
-            textColor="white"
           />
         </q-toolbar>
       </q-footer>
@@ -60,9 +59,22 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-.stellar-nexus-logo {
-  height: 50px;
+.public-header {
+  background-color: $primary;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
 
+.public-toolbar-title {
+  color: $primary-white;
+  font-weight: 600;
+}
+
+.public-footer {
+  background-color: $primary;
+}
+
+.stellar-nexus-logo {
+  height: 40px;
   margin-bottom: 5px;
   margin-top: 5px;
 }

@@ -1,7 +1,6 @@
 <template>
-  <div>
+  <div class="table-wrapper">
     <q-table
-      bordered
       class="q-mt-lg default-table"
       :columns="tableColumns"
       data-cy="default-table"
@@ -15,6 +14,7 @@
       :selection="selection"
       v-show="tableShow"
       :visible-columns="visibleColumns"
+      @row-click="onRowClick"
     >
       <template v-slot:top>
         <div class="q-table__title items-end q-mb-sm">
@@ -315,7 +315,7 @@ export default defineComponent({
       default: true
     }
   },
-  emits: ['updateRows', 'updateSelected', 'onSelection'],
+  emits: ['updateRows', 'updateSelected', 'onSelection', 'rowClick'],
   setup (props, { emit }) {
     const visibleColumns = ref([])
     const columnFilters = ref({})
@@ -324,6 +324,10 @@ export default defineComponent({
 
     function onSelection (context) {
       emit('onSelection', context)
+    }
+
+    function onRowClick (evt, row, index) {
+      emit('rowClick', evt, row, index)
     }
 
     const selected = ref(props.selected)
@@ -588,6 +592,7 @@ export default defineComponent({
     return {
       visibleColumns,
       onSelection,
+      onRowClick,
       selectedModel,
       filterModel,
       clearFilters,
@@ -608,12 +613,79 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.table-wrapper {
+  background-color: $card-bg;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  padding: 16px;
+}
+
+body.body--dark .table-wrapper {
+  background-color: $dark-card-bg;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
 .default-table {
   --animate-duration: 2s;
+  border-radius: 8px;
+  overflow: hidden;
+
+  :deep(thead tr) {
+    background-color: $surface;
+
+    th {
+      color: $text-muted;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-bottom: 1px solid $sn-border;
+    }
+  }
+
+  :deep(tbody tr) {
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: $table-row-hover;
+    }
+
+    td {
+      border-bottom: 1px solid $sn-border;
+      color: $text-primary;
+    }
+  }
+}
+
+body.body--dark .default-table {
+  :deep(thead tr) {
+    background-color: $dark-elevated;
+
+    th {
+      color: $dark-text-muted;
+      border-bottom-color: $dark-border;
+    }
+  }
+
+  :deep(tbody tr) {
+    &:hover {
+      background-color: $dark-table-row-hover;
+    }
+
+    td {
+      border-bottom-color: $dark-border;
+      color: $dark-text-primary;
+    }
+  }
 }
 
 .table-description {
-  font-size: .8rem;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+body.body--dark .table-description {
+  color: $dark-text-muted;
 }
 
 .filter-badge {
@@ -622,7 +694,6 @@ export default defineComponent({
 
 .column-filter-menu {
   min-width: 200px;
-  // max-height: 400px;
   overflow-y: auto;
 }
 

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "@plannotator/opencode@latest"
+  ],
+  "mcpServers": {
+    "better-auth": {
+      "command": "node",
+      "args": ["C:\\Users\\NeilHoff\\Documents\\github\\better-auth-mcp-server\\build\\index.js"],
+      "env": {
+        "BETTER_AUTH_PROJECT_ID": "your-project-id",
+        "BETTER_AUTH_API_KEY": "your-api-key"
+      }
+    }
+  }
+}

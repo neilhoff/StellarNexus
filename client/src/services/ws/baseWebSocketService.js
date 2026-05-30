@@ -1,20 +1,81 @@
 import { globalMessageHandler } from './globalMessageHandler.js'
+import { useAuthStore } from 'src/stores/authStore.js'
 
-const createBaseWebSocketService = () => {
+function normalizeWebSocketUrl (rawUrl) {
+  const fallback = typeof window !== 'undefined' ? window.location.origin : 'ws://localhost:3333'
+  const source = rawUrl || fallback
+
+  try {
+    const parsed = new URL(source, fallback)
+    if (parsed.protocol === 'http:') parsed.protocol = 'ws:'
+    if (parsed.protocol === 'https:') parsed.protocol = 'wss:'
+    return parsed.toString()
+  } catch {
+    if (source.startsWith('http://')) return source.replace('http://', 'ws://')
+    if (source.startsWith('https://')) return source.replace('https://', 'wss://')
+    return source
+  }
+}
+
+function getConnectionUrl () {
+  const url = new URL(normalizeWebSocketUrl(process.env.WS_URL))
+
+  try {
+    const authStore = useAuthStore()
+    if (authStore?.idToken) {
+      url.searchParams.set('token', authStore.idToken)
+    }
+    if (authStore?.email) {
+      url.searchParams.set('email', authStore.email)
+    }
+  } catch {
+    // Ignore auth metadata if store is unavailable during app bootstrap.
+  }
+
+  return url.toString()
+}
+
+function createBaseWebSocketService () {
   let ws = null
   let messageHandlers = [] // Array to store all message handlers
+  let reconnectAttempts = 0
+  let reconnectTimer = null
+  let shouldReconnect = true
 
-  const connect = () => {
+  function clearReconnectTimer () {
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer)
+      reconnectTimer = null
+    }
+  }
+
+  function scheduleReconnect () {
+    if (!shouldReconnect || reconnectTimer) return
+    const delay = Math.min(1000 * (2 ** reconnectAttempts), 15000)
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = null
+      reconnectAttempts += 1
+      connect().catch((error) => {
+        console.error('WebSocket reconnect failed:', error)
+      })
+    }, delay)
+  }
+
+  function connect () {
     return new Promise((resolve, reject) => {
       if (ws && ws.readyState === WebSocket.OPEN) {
         resolve(ws)
         return
       }
 
-      ws = new WebSocket(process.env.WS_URL)
+      clearReconnectTimer()
+      shouldReconnect = true
+
+      ws = new WebSocket(getConnectionUrl())
 
       ws.onopen = () => {
         console.log('Connected to WebSocket server')
+        reconnectAttempts = 0
         resolve(ws)
       }
 
@@ -27,7 +88,7 @@ const createBaseWebSocketService = () => {
       ws.onclose = () => {
         console.log('Disconnected from WebSocket server')
         ws = null
-        // Optionally, attempt to reconnect
+        scheduleReconnect()
       }
 
       ws.onerror = (error) => {
@@ -37,11 +98,11 @@ const createBaseWebSocketService = () => {
     })
   }
 
-  const isConnected = () => {
+  function isConnected () {
     return ws !== null && ws.readyState === WebSocket.OPEN
   }
 
-  const send = (action, data, includeMe = false) => {
+  function send (action, data, includeMe = false) {
     const sendData = JSON.stringify({
       action: action,
       data: { ...data },
@@ -55,7 +116,9 @@ const createBaseWebSocketService = () => {
     }
   }
 
-  const disconnect = () => {
+  function disconnect () {
+    shouldReconnect = false
+    clearReconnectTimer()
     if (ws) {
       ws.close()
     }
@@ -64,7 +127,7 @@ const createBaseWebSocketService = () => {
   }
 
   // Add a message handler (global or page-specific)
-  const addMessageHandler = (handler) => {
+  function addMessageHandler (handler) {
     if (typeof handler === 'function' && !messageHandlers.includes(handler)) {
       messageHandlers.push(handler)
       return handler // Return handler for reference (useful for removal)
@@ -76,7 +139,7 @@ const createBaseWebSocketService = () => {
   addMessageHandler(globalMessageHandler)
 
   // Remove a specific message handler
-  const removeMessageHandler = (handler) => {
+  function removeMessageHandler (handler) {
     messageHandlers = messageHandlers.filter(h => h !== handler)
   }
 

@@ -9,21 +9,20 @@
       show-if-above
     >
       <q-scroll-area class="fit">
-        <div class="column flex flex-center q-py-md q-gutter-sm">
+        <div class="drawer-header column flex flex-center q-py-md q-gutter-sm">
           <img
             :class="leftDrawerState === 'mini' ? 'title-img-mini' : 'title-img-max'"
             :src="drawerLogo"
           >
           <div
-            class="q-ml-none text-h5 drawer-site-title"
+            class="q-ml-none drawer-site-title"
             data-cy="drawer-site-title"
             v-if="leftDrawerState !== 'mini'"
           >
             {{ siteTitle }}
           </div>
           <div
-            class="q-ma-none"
-            style="font-size: .8rem;"
+            class="env-indicator"
             v-if="leftDrawerState !== 'mini'"
           > {{ isProduction() ? '' : env }}</div>
         </div>
@@ -71,10 +70,11 @@
 <script>
 import EssentialLink from './components/EssentialLink.vue'
 import AvatarWithMenu from 'src/layouts/components/AvatarWithMenu.vue'
-import { essentialLinks } from 'src/services/protected/essentialLinks.js'
+import { getAuthorizedLinkGroups } from 'src/services/protected/essentialLinks.js'
+import { hasAdminAccess } from 'src/services/auth/cognitoService'
 import { useQuasar } from 'quasar'
 
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 
 import { useConfigStore } from 'src/stores/configStore.js'
 const configStore = useConfigStore()
@@ -91,13 +91,18 @@ export default defineComponent({
     const siteTitle = process.env.APP_DISPLAY_NAME
     const $q = useQuasar()
     const authStore = useAuthStore()
-    // const userInfo = {
-    //   email: authStore.email,
-    //   displayName: authStore.email.split('@')[0]
-    // }
+    const isAdmin = ref(false)
+
+    onMounted(async () => {
+      try {
+        isAdmin.value = await hasAdminAccess()
+      } catch {
+        isAdmin.value = false
+      }
+    })
 
     return {
-      authorizedLinkGroups: computed(() => essentialLinks.filter(lg => lg.authorized)),
+      authorizedLinkGroups: computed(() => getAuthorizedLinkGroups(isAdmin.value)),
       env,
       isProduction: () => process.env.ENV === 'production',
       leftDrawerState: computed(() => configStore.leftDrawerState),
@@ -112,19 +117,45 @@ export default defineComponent({
 
 <style lang="scss">
 .drawer-light-mode {
-  background-color: $off-white;
+  background-color: $card-bg;
+  border-right: 1px solid $sn-border;
 }
 
 .drawer-dark-mode {
-  background-color: #1d1d1d;
+  background-color: $dark-surface;
+  border-right: 1px solid $dark-border;
+}
+
+.drawer-header {
+  padding-top: 16px;
+  padding-bottom: 16px;
 }
 
 .title-img-max {
-  height: 100px;
+  height: 80px;
 }
 
 .title-img-mini {
   width: 50px;
+}
+
+.drawer-site-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+body.body--dark .drawer-site-title {
+  color: $dark-text-primary;
+}
+
+.env-indicator {
+  font-size: 0.75rem;
+  color: $text-muted;
+}
+
+body.body--dark .env-indicator {
+  color: $dark-text-muted;
 }
 
 .profile-pic {

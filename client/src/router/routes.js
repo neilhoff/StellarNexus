@@ -12,8 +12,7 @@ const routes = [
     component: () => import('layouts/ProtectedLayout.vue'),
     children: [
       { path: '', component: () => import('pages/protected/IndexPage.vue') },
-      { path: '/p/call-rest-api', component: () => import('pages/protected/callRestApi/CallRestApi.vue') },
-      { path: '/p/stellar-chat', component: () => import('pages/protected/stellarChat/StellarChat.vue') }
+      { path: '/p/call-rest-api', component: () => import('pages/protected/callRestApi/CallRestApi.vue') }
     ],
     meta: { requiresAuth: true }
   },
@@ -22,7 +21,8 @@ const routes = [
     component: () => import('layouts/ProtectedLayout.vue'),
     children: [
       { path: '/p/admin/stellar-analytics', component: () => import('pages/protected/admin/StellarTracks/StellarAnalytics.vue') },
-      { path: '/p/admin/stellar-error-log', component: () => import('pages/protected/admin/StellarTracks/StellarErrorLog.vue') }
+      { path: '/p/admin/stellar-error-log', component: () => import('pages/protected/admin/StellarTracks/StellarErrorLog.vue') },
+      { path: '/p/admin/user-maintenance', component: () => import('pages/protected/admin/UserMaintenance/UserMaintenance.vue') }
     ],
     meta: { requiresAuth: true, requiresAdmin: true } //TODO: Setup admin authorizations
   },

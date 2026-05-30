@@ -13,6 +13,32 @@ const poolData = {
 
 const userPool = new CognitoUserPool(poolData)
 
+function decodeJwtPayload (token) {
+  if (!token || typeof token !== 'string') return null
+  const parts = token.split('.')
+  if (parts.length !== 3) return null
+
+  try {
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4 || 4)) % 4, '=')
+    return JSON.parse(atob(padded))
+  } catch {
+    return null
+  }
+}
+
+function getTokenGroups (payload) {
+  const groups = payload?.['cognito:groups']
+  if (!groups) return []
+  if (Array.isArray(groups)) return groups
+  if (typeof groups === 'string') return [groups]
+  return []
+}
+
+function hasPrivilegedGroup (groups) {
+  return groups.includes('admin') || groups.includes('super-admin')
+}
+
 // Sign-in function
 export async function cognitoSignIn (email, password) {
   const authenticationDetails = new AuthenticationDetails({
@@ -205,6 +231,27 @@ export async function resendConfirmationCode (email) {
         message: 'Confirmation code resent successfully',
         delivery: result?.CodeDeliveryDetails
       })
+    })
+  })
+}
+
+export async function hasAdminAccess () {
+  const cognitoUser = userPool.getCurrentUser()
+  if (!cognitoUser) return false
+
+  return new Promise((resolve) => {
+    cognitoUser.getSession((err, session) => {
+      if (err || !session) {
+        resolve(false)
+        return
+      }
+
+      const idToken = session.getIdToken()?.getJwtToken()
+      const accessToken = session.getAccessToken()?.getJwtToken()
+
+      const idGroups = getTokenGroups(decodeJwtPayload(idToken))
+      const accessGroups = getTokenGroups(decodeJwtPayload(accessToken))
+      resolve(hasPrivilegedGroup(idGroups) || hasPrivilegedGroup(accessGroups))
     })
   })
 }

@@ -1,6 +1,3 @@
-// import { useAuthStore } from 'src/stores/authStore.js'
-// const authStore = useAuthStore()
-
 export const essentialLinks = [
   {
     title: '',
@@ -31,15 +28,6 @@ export const essentialLinks = [
           internal: true
         },
         authorized: true
-      },
-      {
-        title: 'Stellar Chat',
-        icon: 'fa-regular fa-comments',
-        link: {
-          location: '/p/stellar-chat',
-          internal: true
-        },
-        authorized: true
       }
     ]
   },
@@ -47,12 +35,13 @@ export const essentialLinks = [
     title: 'Admin',
     bgColor: 'accent',
     authorized: true,
+    requiresAdmin: true,
     links: [
       {
         title: 'Dashboard',
         icon: 'fas fa-tachometer-alt',
         link: {
-          location: '/admin',
+          location: '/p/admin/stellar-analytics',
           internal: true
         },
         authorized: true
@@ -74,7 +63,42 @@ export const essentialLinks = [
           internal: true
         },
         authorized: true
+      },
+      {
+        title: 'User Maintenance',
+        icon: 'fas fa-users-cog',
+        link: {
+          location: '/p/admin/user-maintenance',
+          internal: true
+        },
+        authorized: true
       }
     ]
   }
 ]
+
+function canShowItem (item, isAdmin) {
+  if (!item?.authorized) return false
+  if (item.requiresAdmin && !isAdmin) return false
+  return true
+}
+
+function getAuthorizedLinkGroups (isAdmin = false) {
+  return essentialLinks
+    .filter((group) => canShowItem(group, isAdmin))
+    .map((group) => {
+      // Links inherit requiresAdmin from their parent group
+      const groupRequiresAdmin = !!group.requiresAdmin
+      return {
+        ...group,
+        links: (group.links || []).filter((link) =>
+          canShowItem({ ...link, requiresAdmin: link.requiresAdmin || groupRequiresAdmin }, isAdmin)
+        )
+      }
+    })
+    .filter((group) => (group.links || []).length > 0)
+}
+
+export {
+  getAuthorizedLinkGroups
+}
