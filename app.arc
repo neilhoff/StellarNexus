@@ -12,7 +12,7 @@ get /api/admin/users
 
 post /api/admin/users/update
 post /api/admin/users/disable
-post /api/users/sync
+post /api/auth
 
 options /api/*
 
@@ -30,9 +30,6 @@ stellarTracks
 connections
   connectionId *String
   expires TTL
-users
-  pk *String
-  sk **String
 
 @indexes
 connections

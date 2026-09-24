@@ -26,11 +26,11 @@
 </template>
 
 <script>
-import { computed, defineComponent, onMounted, ref } from 'vue'
+import { computed, defineComponent } from 'vue'
 import EssentialCard from './components/EssentialCard.vue'
 import { getAuthorizedLinkGroups } from 'src/services/protected/essentialLinks.js'
-import { hasAdminAccess } from 'src/services/auth/cognitoService'
 import PageHeader from 'src/components/PageHeader.vue'
+import { useAuthStore } from 'src/stores/authStore'
 
 export default defineComponent({
   name: 'PageIndex',
@@ -40,18 +40,10 @@ export default defineComponent({
   },
   setup () {
     const siteName = process.env.APP_DISPLAY_NAME
-    const isAdmin = ref(false)
-
-    onMounted(async () => {
-      try {
-        isAdmin.value = await hasAdminAccess()
-      } catch {
-        isAdmin.value = false
-      }
-    })
+    const authStore = useAuthStore()
 
     return {
-      authorizedLinkGroups: computed(() => getAuthorizedLinkGroups(isAdmin.value)),
+      authorizedLinkGroups: computed(() => getAuthorizedLinkGroups(authStore.isAdmin)),
       siteName
     }
   }

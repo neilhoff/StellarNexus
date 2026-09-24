@@ -93,7 +93,7 @@
           Easily add and maintain serverless functions with the Architect Framework.
         </p>
         <p>
-          AWS Cognito is a robust standards based Authentication platform that is fully integrated into Stellar Nexus.
+          Better Auth with Turso SQLite provides a lightweight, fully integrated authentication system.
         </p>
 
         <h3 class="features-subheading">Stellar Nexus combines all of these wonderful frameworks into one.</h3>
@@ -102,9 +102,9 @@
             breeze!</li>
           <li>Fantastic builtin front-end components supplied by Quasar JS. Supply your colors, fonts and logo and you
             are ready to go!</li>
-          <li>User Authentication using AWS Cognito is built in with easy setup instructions to get you up and running
+           <li>User Authentication using Better Auth is built in with easy setup instructions to get you up and running
             fast.</li>
-          <li>Beautiful protected section secured through AWS Cognito</li>
+           <li>Beautiful protected section secured through Better Auth</li>
           <li>User analytics</li>
           <li>Robust error logging</li>
           <li>Simple build tools to get your Staging and Production environment running in AWS in no time!</li>
@@ -402,23 +402,12 @@ body.body--dark .tech-card-title {
 }
 
 .quasar-logo,
-.architect-logo,
-.cognito-logo {
+.architect-logo {
   height: 50px;
 }
 
 .quasar-logo-type {
   height: 20px;
-}
-
-.cognito-text {
-  font-size: 1.5rem;
-  color: $primary;
-  font-weight: 600;
-}
-
-body.body--dark .cognito-text {
-  color: $primary;
 }
 
 .features-section {

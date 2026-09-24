@@ -15,13 +15,13 @@ npm run onboard
 
 The onboarding flow asks guided questions so setup is repeatable and less error-prone.
 It updates project naming, metadata, Architect app settings, and client env files.
-It can verify your local dev tooling and bootstrap Cognito (existing pool or new pool/client),
-create/ensure `super-admin` + `admin` groups, and optionally create the initial `super-admin` user.
+It can verify your local dev tooling and configure authentication (Turso database, Better Auth, Resend API key),
+create the initial `super-admin` user, and set up environment variables.
 
 Why this matters:
 - Reduces manual copy/paste mistakes during new site setup
 - Makes bootstrap steps auditable and consistent with `Agent.md`
-- Helps ensure privileged-role setup is done in Cognito, not ad hoc local state
+- Helps ensure privileged-role setup is done in Turso, not ad hoc local state
 
 ## New Project Steps
 
@@ -31,7 +31,7 @@ Why this matters:
     - Prompts for site name, app identifier, `@app` (snake_case), AWS profile/region
     - Updates `package.json`, `client/package.json`, `app.arc`, and `client/.env*`
     - Creates `client/.env` from `client/.env.template` if missing
-    - Supports Cognito bootstrap (existing or newly created user pool/client)
+    - Supports authentication bootstrap (Turso DB, Better Auth, Resend)
 - Update the Drawer Logos `client/public`
 - Update the title, logo and description in this readme file
 - Go through the **Development Environment Setup** steps below
@@ -95,7 +95,7 @@ aws_secret_access_key=xxx
   	- Run `npm install` in the `client` folder
 - Run guided onboarding from the root:
     - `npm run onboard`
-    - Use this to validate tooling and configure app metadata + Cognito bootstrap
+    - Use this to validate tooling and configure app metadata + auth bootstrap
 - Start the client and server for development
     - From the root folder: `npm start`
 - Client is located at http://localhost:9000
@@ -185,26 +185,30 @@ arc deploy --production
     - Push the changes to the remote repository and create a tag
         - Example tag: `Release_2.0.1`
 
-## AWS Cognito Setup
+## Authentication Setup
 
-### Create a User Pool
- 
- - Manages users (sign-up, sign-in, MFA)
+### Turso Database
 
-### Admin and Super-Admin Bootstrap (Template Setup)
+- Create a database at [Turso](https://turso.tech)
+- Get your database URL and auth token
+- Run: `turso db create stellar-nexus-dev`
+- Set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in arc env
 
-- Create Cognito groups for privileged roles:
-    - `super-admin`
-    - `admin`
+### Email Delivery (Resend)
+
+- Sign up at [Resend](https://resend.com)
+- Get your API key and set `RESEND_API_KEY` in arc env
+
+### Admin and Super-Admin Bootstrap
+
 - Bootstrap one initial `super-admin` during site setup.
     - This should be done once per new site.
-    - Prefer a scripted setup flow (CLI/API) over manual console edits so it is repeatable.
+    - Use `node scripts/bootstrap-users.mjs` for a repeatable scripted flow.
 - After bootstrap, use app admin APIs to grant/revoke admin access.
-    - These APIs should update Cognito group membership behind the scenes.
-    - Avoid relying on DynamoDB-only role flags for privileged access.
-- Disabling sign-in should call Cognito disable operations.
-    - App table `disabled` fields are useful for UI and auditing, but Cognito remains enforcement.
-- Keep bootstrap and role-management rules in `Agent.md` and `.github/copilot-instructions.md` aligned.
+    - These APIs update the `roles` JSON array in the Turso `user` table.
+- Disabling sign-in sets `disabled = 1` in the Turso `user` table.
+    - App table `disabled` fields are used for UI and auditing.
+- Keep bootstrap and role-management rules in `AGENTS.md` aligned.
 
 #### Notes
 
@@ -215,10 +219,6 @@ rawDefine: {
     global: {}
 },
 ```
-
-### Create an Identity Pool
-
-- Maps authenticated/unauthenticated users to AWS credentials to gain access to S3, DynamoDB, etc...
 
 ## Stellar Nexus Template Development
 

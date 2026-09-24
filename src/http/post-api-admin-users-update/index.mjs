@@ -1,11 +1,7 @@
 import arc from '@architect/functions'
 import { logError } from '@architect/shared/stellarErrorLogger.mjs'
 import { requireAdminIdentity } from '@architect/shared/adminAuth.mjs'
-import {
-  getDefaultUserRecord,
-  getUserKey,
-  normalizeEmail
-} from '@architect/shared/userMaintenance.mjs'
+import { upsertUser, getUserByEmail, normalizeEmail } from '@architect/shared/userMaintenance.mjs'
 
 function buildJsonResponse (statusCode, payload) {
   return {
@@ -32,7 +28,7 @@ function parseStatusCode (error) {
 
 async function updateAdminUser (req, context) {
   try {
-    const identity = requireAdminIdentity(req)
+    const identity = await requireAdminIdentity(req)
     const body = parseBody(req)
     const email = normalizeEmail(body.email)
 
@@ -40,34 +36,29 @@ async function updateAdminUser (req, context) {
       return buildJsonResponse(400, { error: 'email is required' })
     }
 
-    const db = await arc.tables()
-    const usersTable = db.users
-    const nowIso = new Date().toISOString()
-
-    const currentRecord = await usersTable.get(getUserKey(email))
-    const nextRecord = currentRecord || getDefaultUserRecord(email, nowIso)
+    const existing = await getUserByEmail(email)
+    const updates = {}
 
     if (typeof body.displayName === 'string') {
-      nextRecord.displayName = body.displayName.trim() || email
-      nextRecord.displayNameLower = nextRecord.displayName.toLowerCase()
+      updates.name = body.displayName.trim() || email
     }
 
-    nextRecord.updatedAt = nowIso
-    nextRecord.updatedBy = identity.email
+    if (existing) {
+      const updated = await upsertUser(email, updates)
+      return buildJsonResponse(200, {
+        success: true,
+        user: {
+          email: updated.email,
+          displayName: updated.name || updated.email,
+          disabled: Boolean(updated.disabled),
+          createdAt: updated.created_at || null,
+          lastSignInAt: updated.last_sign_in_at || null,
+          updatedAt: updated.updated_at || null
+        }
+      })
+    }
 
-    await usersTable.put(nextRecord)
-
-    return buildJsonResponse(200, {
-      success: true,
-      user: {
-        email: nextRecord.email,
-        displayName: nextRecord.displayName || nextRecord.email,
-        disabled: Boolean(nextRecord.disabled),
-        createdAt: nextRecord.createdAt || null,
-        lastSignInAt: nextRecord.lastSignInAt || null,
-        updatedAt: nextRecord.updatedAt || null
-      }
-    })
+    return buildJsonResponse(404, { error: 'User not found' })
   } catch (error) {
     const statusCode = parseStatusCode(error)
     if (statusCode !== 500) {

@@ -77,22 +77,26 @@ Create separate databases per environment for isolation:
 
 **Files to create/modify:**
 - `src/shared/betterAuth.mjs` — Better Auth server instance with Turso adapter
+- `src/shared/authActions.mjs` — Auth action handlers (signin, signup, signout, refresh, forgot-password, reset-password, verify-email, session)
+- `src/http/post-api-auth/index.mjs` — Single auth endpoint, dispatches to action handlers based on `action` param
 - `package.json` (root) — add `better-auth` dependency
-- `src/http/post-api-auth-signin/index.mjs` — new sign-in endpoint
-- `src/http/post-api-auth-signup/index.mjs` — new sign-up endpoint
-- `src/http/post-api-auth-signout/index.mjs` — new sign-out endpoint
-- `src/http/post-api-auth-refresh/index.mjs` — new session refresh endpoint
-- `src/http/post-api-auth-forgot-password/index.mjs` — new forgot password endpoint
-- `src/http/post-api-auth-reset-password/index.mjs` — new reset password endpoint
-- `src/http/post-api-auth-verify-email/index.mjs` — new email verification endpoint
-- `app.arc` — register new auth routes
+- `app.arc` — register single auth route
 
 **Actions:**
 - Run `npm install better-auth` at repo root
 - Create Better Auth instance with Turso adapter
-- Configure email/password provider
+- Configure email/password provider + Resend for email delivery
 - Configure OAuth providers (GitHub, Google, etc.)
 - Set up session management (cookie + Bearer token support)
+- Create action handlers in `authActions.mjs`:
+  - `handleSignIn({ email, password })`
+  - `handleSignUp({ email, password, name })`
+  - `handleSignOut({ token })`
+  - `handleRefresh({ refreshToken })`
+  - `handleForgotPassword({ email })`
+  - `handleResetPassword({ email, code, newPassword })`
+  - `handleVerifyEmail({ email, code })`
+  - `handleGetSession({ token })`
 
 ### 1.3 Create Turso Schema
 
@@ -163,8 +167,8 @@ CREATE INDEX idx_account_user_id ON account(user_id);
 - `src/shared/userMaintenance.mjs` → rewrite to use Turso instead of DynamoDB
 
 **Key changes:**
-- `authIdentity.mjs`: Parse Better Auth session cookie or Bearer token, extract `email`, `role`, `userId`
-- `adminAuth.mjs`: Check `role` field (`admin`, `super-admin`) instead of `cognito:groups`
+- `authIdentity.mjs`: Parse Better Auth session cookie or Bearer token, extract `email`, `roles` (JSON array), `userId`
+- `adminAuth.mjs`: Check `roles` array for `admin` or `super-admin` instead of `cognito:groups`
 - `userMaintenance.mjs`: All user CRUD operations use Turso SQL queries instead of DynamoDB
 
 ### 2.2 Update Existing HTTP Endpoints
@@ -195,14 +199,17 @@ CREATE INDEX idx_account_user_id ON account(user_id);
 
 **Add to `@http`:**
 ```
-post /api/auth/signin
-post /api/auth/signup
-post /api/auth/signout
-post /api/auth/refresh
-post /api/auth/forgot-password
-post /api/auth/reset-password
-post /api/auth/verify-email
-get  /api/auth/session
+post /api/auth
+```
+
+The single endpoint accepts `{ action, ...params }` and dispatches to the appropriate handler.
+
+**Example request:**
+```json
+{ "action": "signin", "email": "user@example.com", "password": "secret" }
+{ "action": "signup", "email": "user@example.com", "password": "secret", "name": "User" }
+{ "action": "refresh", "refreshToken": "..." }
+{ "action": "session", "token": "..." }
 ```
 
 **Remove from `@http` (or keep as deprecated during migration):**
@@ -231,9 +238,10 @@ export async function getSession()
 ```
 
 **Key changes:**
-- Replace `amazon-cognito-identity-js` SDK calls with `fetch()` to new auth endpoints
+- Replace `amazon-cognito-identity-js` SDK calls with `fetch()` to `POST /api/auth` with action params
 - Token format changes from Cognito JWT to Better Auth session token
-- `hasAdminAccess()` checks `role` field from session response instead of `cognito:groups`
+- `hasAdminAccess()` checks `roles` array from session response for `admin` or `super-admin`
+- Single endpoint pattern: `{ action: "signin", email, password }`
 
 ### 3.2 Update Auth Store
 
@@ -242,8 +250,8 @@ export async function getSession()
 
 **Key changes:**
 - Replace `refreshToken` with Better Auth session token
-- Add `role` field to state (from session response)
-- Update `signIn()`, `signOut()`, `refresh()` to use new service
+- Add `roles` array to state (from session response, default `["user"]`)
+- Update `signIn()`, `signOut()`, `refresh()` to use new service with single endpoint pattern
 - Update `isAuthenticated` getter to check Better Auth session validity
 
 ### 3.3 Update Router Guard
@@ -252,7 +260,7 @@ export async function getSession()
 - `client/src/router/index.js`
 
 **Key changes:**
-- `hasAdminAccess()` now checks `authStore.role` instead of Cognito groups
+- `hasAdminAccess()` now checks `authStore.roles` array for `admin` or `super-admin`
 - Session validation uses Better Auth session expiry
 
 ### 3.4 Update API Helper
@@ -275,8 +283,8 @@ export async function getSession()
 ### 3.6 Update UI Components
 
 **Files to modify:**
-- `client/src/pages/public/SignupSignin.vue` — update to use new auth service
-- `client/src/layouts/ProtectedLayout.vue` — use `authStore.role` instead of `hasAdminAccess()`
+- `client/src/pages/public/SignupSignin.vue` — update to use new auth service (single endpoint)
+- `client/src/layouts/ProtectedLayout.vue` — check `authStore.roles` for admin access
 - `client/src/pages/protected/IndexPage.vue` — same
 - `client/src/services/protected/essentialLinks.js` — no changes needed (still uses `isAdmin` boolean)
 - `client/src/services/protected/users/userSyncService.js` — **delete** (no longer needed)
@@ -346,28 +354,22 @@ Since there are no live sites, no password migration is needed. Instead, bootstr
 
 ## File Change Summary
 
-### New Files (~15)
+### New Files (~12)
 | File | Purpose |
 |------|---------|
 | `src/shared/tursoClient.mjs` | Turso database client |
 | `src/shared/betterAuth.mjs` | Better Auth server instance |
-| `src/http/post-api-auth-signin/index.mjs` | Sign-in endpoint |
-| `src/http/post-api-auth-signup/index.mjs` | Sign-up endpoint |
-| `src/http/post-api-auth-signout/index.mjs` | Sign-out endpoint |
-| `src/http/post-api-auth-refresh/index.mjs` | Session refresh endpoint |
-| `src/http/post-api-auth-forgot-password/index.mjs` | Forgot password endpoint |
-| `src/http/post-api-auth-reset-password/index.mjs` | Reset password endpoint |
-| `src/http/post-api-auth-verify-email/index.mjs` | Email verification endpoint |
-| `src/http/get-api-auth-session/index.mjs` | Get current session endpoint |
+| `src/shared/authActions.mjs` | Auth action handlers (signin, signup, etc.) |
+| `src/http/post-api-auth/index.mjs` | Single auth endpoint (dispatches by action) |
 | `client/src/services/auth/betterAuthService.js` | Frontend auth service |
 | `scripts/bootstrap-users.mjs` | Initial user bootstrap script |
-| `scripts/schema.sql` | Turso database schema |
+| `scripts/auth-schema.sql` | Turso database schema |
 
 ### Modified Files (~20)
 | File | Changes |
 |------|---------|
-| `src/shared/authIdentity.mjs` | Parse Better Auth session instead of Cognito JWT |
-| `src/shared/adminAuth.mjs` | Check `role` column instead of Cognito groups |
+| `src/shared/authIdentity.mjs` | Parse Better Auth session, extract `roles` array |
+| `src/shared/adminAuth.mjs` | Check `roles` array instead of Cognito groups |
 | `src/shared/userMaintenance.mjs` | Use Turso instead of DynamoDB |
 | `src/http/get-api-admin-users/index.mjs` | Query Turso |
 | `src/http/post-api-admin-users-update/index.mjs` | Update Turso |
@@ -375,13 +377,13 @@ Since there are no live sites, no password migration is needed. Instead, bootstr
 | `src/http/get-api-users-search/index.mjs` | Query Turso |
 | `src/ws/stellar-track/index.mjs` | Parse Better Auth token |
 | `client/src/stores/authStore.js` | Use Better Auth session, add `role` field |
-| `client/src/router/index.js` | Check `role` instead of Cognito groups |
+| `client/src/router/index.js` | Check `roles` array instead of Cognito groups |
 | `client/src/services/serviceHelpers.js` | Use Better Auth token |
 | `client/src/services/ws/baseWebSocketService.js` | Use Better Auth token |
 | `client/src/pages/public/SignupSignin.vue` | Use new auth service |
-| `client/src/layouts/ProtectedLayout.vue` | Use `authStore.role` |
-| `client/src/pages/protected/IndexPage.vue` | Use `authStore.role` |
-| `app.arc` | Add auth routes, remove users table (optional) |
+| `client/src/layouts/ProtectedLayout.vue` | Check `authStore.roles` |
+| `client/src/pages/protected/IndexPage.vue` | Check `authStore.roles` |
+| `app.arc` | Add `post /api/auth`, remove users table + sync route |
 | `client/.env` | Remove Cognito vars, add Turso vars |
 | `client/.env.template` | Same |
 | `package.json` (root) | Add `@libsql/client`, `better-auth` |

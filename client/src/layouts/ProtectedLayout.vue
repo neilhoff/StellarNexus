@@ -71,10 +71,9 @@
 import EssentialLink from './components/EssentialLink.vue'
 import AvatarWithMenu from 'src/layouts/components/AvatarWithMenu.vue'
 import { getAuthorizedLinkGroups } from 'src/services/protected/essentialLinks.js'
-import { hasAdminAccess } from 'src/services/auth/cognitoService'
 import { useQuasar } from 'quasar'
 
-import { computed, defineComponent, onMounted, ref } from 'vue'
+import { computed, defineComponent } from 'vue'
 
 import { useConfigStore } from 'src/stores/configStore.js'
 const configStore = useConfigStore()
@@ -91,18 +90,9 @@ export default defineComponent({
     const siteTitle = process.env.APP_DISPLAY_NAME
     const $q = useQuasar()
     const authStore = useAuthStore()
-    const isAdmin = ref(false)
-
-    onMounted(async () => {
-      try {
-        isAdmin.value = await hasAdminAccess()
-      } catch {
-        isAdmin.value = false
-      }
-    })
 
     return {
-      authorizedLinkGroups: computed(() => getAuthorizedLinkGroups(isAdmin.value)),
+      authorizedLinkGroups: computed(() => getAuthorizedLinkGroups(authStore.isAdmin)),
       env,
       isProduction: () => process.env.ENV === 'production',
       leftDrawerState: computed(() => configStore.leftDrawerState),

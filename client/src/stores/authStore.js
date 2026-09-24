@@ -1,48 +1,41 @@
 import { defineStore } from 'pinia'
-import { cognitoSignIn, cognitoSignOut, getUserAttributes, refreshSession } from 'src/services/auth/cognitoService.js'
-import { userSyncService } from 'src/services/protected/users/userSyncService.js'
-
-function getAttributeValue (attributes, key) {
-  if (!Array.isArray(attributes)) return ''
-  const attribute = attributes.find((item) => item?.getName?.() === key)
-  return attribute?.getValue?.() || ''
-}
+import {
+  signIn as authSignIn,
+  signOut as authSignOut,
+  refreshSession as authRefreshSession,
+  getSession
+} from 'src/services/auth/betterAuthService.js'
 
 export const useAuthStore = defineStore('authStore', {
   state: () => ({
     accessToken: '',
     idToken: '',
-    refreshToken: '',
     email: '',
-    userAttributes: '',
+    userName: '',
+    roles: [],
     sessionExpiresAt: 0,
     staySignedIn: false
   }),
   getters: {
-    isAuthenticated: (state) => !!state.idToken && !!state.accessToken,
-    isSessionValid: (state) => state.sessionExpiresAt > new Date().getTime()
+    isAuthenticated: (state) => !!state.idToken && state.sessionExpiresAt > new Date().getTime(),
+    isAdmin: (state) => state.roles.includes('admin') || state.roles.includes('super-admin'),
+    isSuperAdmin: (state) => state.roles.includes('super-admin')
   },
   actions: {
     async signIn (email, password, staySignedIn) {
       try {
-        const result = await cognitoSignIn(email, password)
+        const result = await authSignIn(email, password)
         this.accessToken = result.accessToken
         this.idToken = result.idToken
-        this.email = email
+        this.email = result.user.email
+        this.userName = result.user.name || result.user.email
+        this.roles = result.user.roles || ['user']
         this.staySignedIn = staySignedIn
-        this.userAttributes = await getUserAttributes()
-        const givenName = getAttributeValue(this.userAttributes, 'given_name')
-        const familyName = getAttributeValue(this.userAttributes, 'family_name')
-        const displayName = `${givenName} ${familyName}`.trim() || this.email
-
-        await userSyncService.syncCurrentUser(displayName)
 
         if (staySignedIn) {
-          this.refreshToken = result.refreshToken
-          this.sessionExpiresAt = new Date().getTime() + 7 * 24 * 60 * 60 * 1000 // 1 week
+          this.sessionExpiresAt = new Date(result.session.expiresAt).getTime()
         } else {
-          this.refreshToken = ''
-          this.sessionExpiresAt = 0
+          this.sessionExpiresAt = new Date().getTime() + 24 * 60 * 60 * 1000
         }
         return result
       } catch (err) {
@@ -52,17 +45,16 @@ export const useAuthStore = defineStore('authStore', {
     },
     async refresh () {
       try {
-        if (!this.email || !this.refreshToken) throw new Error('No refresh token')
-        const result = await refreshSession(this.email, this.refreshToken)
+        if (!this.email || !this.idToken) throw new Error('No session token')
+        const result = await authRefreshSession(this.idToken)
         this.accessToken = result.accessToken
         this.idToken = result.idToken
-        this.refreshToken = result.refreshToken
+        this.userName = result.user.name || result.user.email
+        this.roles = result.user.roles || ['user']
 
-        const givenName = getAttributeValue(this.userAttributes, 'given_name')
-        const familyName = getAttributeValue(this.userAttributes, 'family_name')
-        const displayName = `${givenName} ${familyName}`.trim() || this.email
-
-        await userSyncService.syncCurrentUser(displayName)
+        if (result.session.expiresAt) {
+          this.sessionExpiresAt = new Date(result.session.expiresAt).getTime()
+        }
 
         return result
       } catch (err) {
@@ -72,21 +64,28 @@ export const useAuthStore = defineStore('authStore', {
     },
     async signOut () {
       try {
-        cognitoSignOut()
+        await authSignOut(this.idToken)
       } finally {
         this.accessToken = ''
         this.idToken = ''
-        this.refreshToken = ''
         this.email = ''
+        this.userName = ''
+        this.roles = []
         this.sessionExpiresAt = 0
         this.staySignedIn = false
       }
     },
     async restoreSession () {
-      if (this.isSessionValid && this.email && this.refreshToken) {
+      if (this.isSessionValid && this.email && this.idToken) {
         try {
-          await this.refresh()
-          return true
+          const session = await getSession(this.idToken)
+          if (session && session.success) {
+            this.accessToken = this.idToken
+            this.userName = session.user.name || session.user.email
+            this.roles = session.user.roles || ['user']
+            this.sessionExpiresAt = new Date(session.session.expiresAt).getTime()
+            return true
+          }
         } catch {
           this.signOut()
         }
@@ -95,6 +94,6 @@ export const useAuthStore = defineStore('authStore', {
     }
   },
   persist: {
-    paths: ['refreshToken', 'email', 'sessionExpiresAt', 'staySignedIn']
+    paths: ['idToken', 'email', 'userName', 'roles', 'sessionExpiresAt', 'staySignedIn']
   }
 })

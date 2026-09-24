@@ -1,7 +1,7 @@
 import arc from '@architect/functions'
 import { logError } from '@architect/shared/stellarErrorLogger.mjs'
 import { requireAdminIdentity } from '@architect/shared/adminAuth.mjs'
-import { mapUserForList } from '@architect/shared/userMaintenance.mjs'
+import { listUsers, mapUserForList } from '@architect/shared/userMaintenance.mjs'
 
 function buildJsonResponse (statusCode, payload) {
   return {
@@ -18,24 +18,15 @@ function parseStatusCode (error) {
 
 async function getAdminUsers (req, context) {
   try {
-    const identity = requireAdminIdentity(req)
-    const db = await arc.tables()
-    const usersTable = db.users
+    const identity = await requireAdminIdentity(req)
 
-    const result = await usersTable.scan({
-      FilterExpression: 'begins_with(pk, :userPrefix) AND sk = :profileSk',
-      ExpressionAttributeValues: {
-        ':userPrefix': 'USER#',
-        ':profileSk': 'PROFILE'
-      }
-    })
-
-    const users = (result.Items || [])
+    const users = await listUsers(500)
+    const mappedUsers = users
       .map(mapUserForList)
       .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
 
     return buildJsonResponse(200, {
-      users,
+      users: mappedUsers,
       requestedBy: identity.email
     })
   } catch (error) {

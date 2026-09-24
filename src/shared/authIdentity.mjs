@@ -1,16 +1,4 @@
-function decodeJwtPayload (token) {
-  if (!token || typeof token !== 'string') return null
-  const parts = token.split('.')
-  if (parts.length !== 3) return null
-
-  try {
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
-    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4 || 4)) % 4, '=')
-    return JSON.parse(Buffer.from(padded, 'base64').toString('utf8'))
-  } catch {
-    return null
-  }
-}
+import { getTursoClient } from './tursoClient.mjs'
 
 function getBearerToken (authorizationHeader) {
   if (!authorizationHeader || typeof authorizationHeader !== 'string') return null
@@ -18,39 +6,51 @@ function getBearerToken (authorizationHeader) {
   return match?.[1] || null
 }
 
-function getCognitoGroups (payload) {
-  const rawGroups = payload?.['cognito:groups']
-  if (!rawGroups) return []
-  if (Array.isArray(rawGroups)) return rawGroups
-  if (typeof rawGroups === 'string') return [rawGroups]
-  return []
-}
+async function getIdentityFromToken (token) {
+  if (!token || typeof token !== 'string') return null
 
-function getIdentityFromToken (token) {
-  const payload = decodeJwtPayload(token)
-  if (!payload) return null
+  try {
+    const db = getTursoClient()
+    const result = await db.execute({
+      sql: `
+        SELECT s.token, s.expires_at, s.user_id, u.email, u.name, u.roles, u.disabled
+        FROM session s
+        JOIN user u ON s.user_id = u.id
+        WHERE s.token = ?
+      `,
+      args: [token]
+    })
 
-  const email = payload.email || payload['cognito:username'] || null
-  const exp = Number.isFinite(payload.exp) ? payload.exp : null
-  const groups = getCognitoGroups(payload)
-  const isSuperAdmin = groups.includes('super-admin')
-  const isAdmin = isSuperAdmin || groups.includes('admin')
+    if (!result.rows || result.rows.length === 0) return null
 
-  return {
-    email,
-    userName: email,
-    exp,
-    groups,
-    isAdmin,
-    isSuperAdmin,
-    payload
+    const row = result.rows[0]
+    const expiresAt = new Date(row.expires_at)
+    if (expiresAt < new Date()) return null
+
+    const roles = JSON.parse(row.roles || '["user"]')
+    const isSuperAdmin = roles.includes('super-admin')
+    const isAdmin = isSuperAdmin || roles.includes('admin')
+
+    return {
+      email: row.email,
+      userName: row.email,
+      userId: row.user_id,
+      name: row.name,
+      roles,
+      isAdmin,
+      isSuperAdmin,
+      disabled: Boolean(row.disabled),
+      exp: Math.floor(expiresAt.getTime() / 1000)
+    }
+  } catch {
+    return null
   }
 }
 
-function getIdentityFromConnectEvent (event) {
+async function getIdentityFromConnectEvent (event) {
   const qs = event?.queryStringParameters || {}
   const token = qs.token || null
-  const tokenIdentity = getIdentityFromToken(token)
+  const tokenIdentity = await getIdentityFromToken(token)
   const email = tokenIdentity?.email || qs.email || null
 
   return {
@@ -58,7 +58,11 @@ function getIdentityFromConnectEvent (event) {
     userName: email,
     token,
     tokenExp: tokenIdentity?.exp || null,
-    tokenPayload: tokenIdentity?.payload || null
+    roles: tokenIdentity?.roles || [],
+    isAdmin: Boolean(tokenIdentity?.isAdmin),
+    isSuperAdmin: Boolean(tokenIdentity?.isSuperAdmin),
+    disabled: Boolean(tokenIdentity?.disabled),
+    tokenPayload: tokenIdentity || null
   }
 }
 
@@ -66,8 +70,6 @@ function getBodyObject (req) {
   const body = req?.body
   if (!body) return null
   if (typeof body === 'object') return body
-  if (typeof body !== 'string') return null
-
   try {
     return JSON.parse(body)
   } catch {
@@ -81,11 +83,11 @@ function getRequestUserNameFallback (req) {
   return qs.userName || qs.email || body.userName || body.email || null
 }
 
-function getIdentityFromHttpRequest (req) {
+async function getIdentityFromHttpRequest (req) {
   const headers = req?.headers || {}
   const authorization = headers.authorization || headers.Authorization || null
   const token = getBearerToken(authorization)
-  const tokenIdentity = getIdentityFromToken(token)
+  const tokenIdentity = await getIdentityFromToken(token)
   const emailHeader = headers['x-user-email'] || headers['X-User-Email'] || null
   const fallbackUser = getRequestUserNameFallback(req)
   const email = tokenIdentity?.email || emailHeader || fallbackUser || null
@@ -93,12 +95,15 @@ function getIdentityFromHttpRequest (req) {
   return {
     email,
     userName: email,
+    userId: tokenIdentity?.userId || null,
+    name: tokenIdentity?.name || null,
     token,
     tokenExp: tokenIdentity?.exp || null,
-    groups: tokenIdentity?.groups || [],
+    roles: tokenIdentity?.roles || [],
     isAdmin: Boolean(tokenIdentity?.isAdmin),
     isSuperAdmin: Boolean(tokenIdentity?.isSuperAdmin),
-    tokenPayload: tokenIdentity?.payload || null
+    disabled: Boolean(tokenIdentity?.disabled),
+    tokenPayload: tokenIdentity || null
   }
 }
 
@@ -107,14 +112,13 @@ function getIdentityFromConnectionRecord (connectionRecord) {
   return {
     email,
     userName: email,
-    displayName: connectionRecord?.displayName || email
+    displayName: connectionRecord?.displayName || email,
+    roles: connectionRecord?.roles || ['user']
   }
 }
 
 export {
-  decodeJwtPayload,
   getBearerToken,
-  getCognitoGroups,
   getIdentityFromToken,
   getIdentityFromConnectEvent,
   getIdentityFromHttpRequest,

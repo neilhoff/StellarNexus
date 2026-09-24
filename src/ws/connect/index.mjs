@@ -7,7 +7,7 @@ export async function handler (event) {
   const connectionsTable = tables.connections
 
   try {
-    const identity = getIdentityFromConnectEvent(event)
+    const identity = await getIdentityFromConnectEvent(event)
     const email = identity.email
     const nowEpoch = Math.floor(Date.now() / 1000)
     const expires = Number.isFinite(identity.tokenExp) ? identity.tokenExp : nowEpoch + (24 * 60 * 60)

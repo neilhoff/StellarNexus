@@ -304,7 +304,13 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
 
-import { forgotPassword, confirmNewPassword, signUp, confirmSignUp, resendConfirmationCode } from 'src/services/auth/cognitoService.js'
+import {
+  signUp,
+  confirmSignUp,
+  forgotPassword,
+  confirmNewPassword,
+  resendConfirmationCode
+} from 'src/services/auth/betterAuthService.js'
 import { useAuthStore } from 'src/stores/authStore'
 
 export default {
@@ -328,12 +334,12 @@ export default {
       }
     }
 
-    async function cognitoServiceCallWrapper (cognitoFunc, successMessage, backupErrorMsg = 'Error') {
+    async function authServiceCallWrapper (authFunc, successMessage, backupErrorMsg = 'Error') {
       try {
         showSpinner.value = true
         error.value = {}
         showResendConfirmationCodeButton.value = false
-        await cognitoFunc()
+        await authFunc()
         if (successMessage) {
           $q.notify({
             message: successMessage,
@@ -359,20 +365,19 @@ export default {
     const staySignedIn = ref(false)
     const showResendConfirmationCodeButton = ref(false)
     async function handleSignIn () {
-      await cognitoServiceCallWrapper(async () => {
-        // const { accessToken, idToken } = await signIn(email.value, password.value)
+      await authServiceCallWrapper(async () => {
         await authStore.signIn(email.value, password.value, staySignedIn.value)
-        router.push('/p') // Redirect to protected route
+        router.push('/p')
       }, null, 'Sign in failed')
-      if (error.value.code === 'UserNotConfirmedException') {
+      if (error.value.message?.toLowerCase().includes('confirm') || error.value.message?.toLowerCase().includes('verify')) {
         showResendConfirmationCodeButton.value = true
       }
-      if (error.value.code === 'NotAuthorizedException') {
+      if (error.value.message?.toLowerCase().includes('password') || error.value.message?.toLowerCase().includes('credential')) {
         password.value = ''
       }
     }
     async function handleResendConfirmationCode () {
-      await cognitoServiceCallWrapper(async () => {
+      await authServiceCallWrapper(async () => {
         const response = await resendConfirmationCode(email.value)
         console.log(response)
         showSignupConfirmDialog.value = true
@@ -403,7 +408,7 @@ export default {
     })
     const showSignupConfirmDialog = ref(false)
     async function handleSignUp () {
-      cognitoServiceCallWrapper(async () => {
+      authServiceCallWrapper(async () => {
         const attr = { ...signUpAttributes }
         attr.phone_number = formatPhoneNumberToE164(attr.phone_number, 1)
         const response = await signUp(signUpEmail.value, signUpPassword.value, attr)
@@ -413,7 +418,7 @@ export default {
     }
     const signupConfirmationCode = ref('')
     async function handleSignUpConfirmationCode () {
-      cognitoServiceCallWrapper(async () => {
+      authServiceCallWrapper(async () => {
         const response = await confirmSignUp(signUpEmail.value, signupConfirmationCode.value)
         console.log(response)
       }, 'Signup confirmed!', 'Signup confirmation failed')
@@ -433,7 +438,7 @@ export default {
     const newPasswordConfirmationCode = ref('')
     const newPassword = ref('')
     async function requestNewPassword () {
-      cognitoServiceCallWrapper(async () => {
+      authServiceCallWrapper(async () => {
         console.log(newPasswordUsername.value)
         const { message, delivery } = await forgotPassword(newPasswordUsername.value)
         console.log(message, delivery)
@@ -442,7 +447,7 @@ export default {
 
     }
     async function saveNewPassword () {
-      cognitoServiceCallWrapper(async () => {
+      authServiceCallWrapper(async () => {
         const response = await confirmNewPassword(newPasswordUsername.value, newPasswordConfirmationCode.value, newPassword.value)
         console.log(response)
         forgotPasswordDialog.value = false

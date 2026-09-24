@@ -1,12 +1,7 @@
 import arc from '@architect/functions'
 import { logError } from '@architect/shared/stellarErrorLogger.mjs'
 import { requireAdminIdentity } from '@architect/shared/adminAuth.mjs'
-import {
-  getDefaultUserRecord,
-  getUserKey,
-  normalizeEmail
-} from '@architect/shared/userMaintenance.mjs'
-import { setCognitoUserDisabled } from '@architect/shared/cognitoAdmin.mjs'
+import { disableUser, enableUser, getUserByEmail, normalizeEmail } from '@architect/shared/userMaintenance.mjs'
 
 function buildJsonResponse (statusCode, payload) {
   return {
@@ -33,7 +28,7 @@ function parseStatusCode (error) {
 
 async function disableAdminUser (req, context) {
   try {
-    const identity = requireAdminIdentity(req)
+    const identity = await requireAdminIdentity(req)
     const body = parseBody(req)
     const email = normalizeEmail(body.email)
 
@@ -45,28 +40,21 @@ async function disableAdminUser (req, context) {
       return buildJsonResponse(400, { error: 'disabled must be a boolean' })
     }
 
-    await setCognitoUserDisabled(email, body.disabled)
+    const existing = await getUserByEmail(email)
+    if (!existing) {
+      return buildJsonResponse(404, { error: 'User not found' })
+    }
 
-    const db = await arc.tables()
-    const usersTable = db.users
-    const nowIso = new Date().toISOString()
-    const currentRecord = await usersTable.get(getUserKey(email))
-
-    const nextRecord = currentRecord || getDefaultUserRecord(email, nowIso)
-    nextRecord.disabled = body.disabled
-    nextRecord.disabledAt = body.disabled ? nowIso : null
-    nextRecord.disabledBy = body.disabled ? identity.email : null
-    nextRecord.updatedAt = nowIso
-    nextRecord.updatedBy = identity.email
-
-    await usersTable.put(nextRecord)
+    const updated = body.disabled
+      ? await disableUser(email, identity.email)
+      : await enableUser(email)
 
     return buildJsonResponse(200, {
       success: true,
       email,
       disabled: body.disabled,
-      disabledAt: nextRecord.disabledAt,
-      disabledBy: nextRecord.disabledBy
+      disabledAt: updated?.disabled_at || null,
+      disabledBy: updated?.disabled_by || null
     })
   } catch (error) {
     const statusCode = parseStatusCode(error)

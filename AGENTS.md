@@ -15,12 +15,24 @@ Full-stack serverless application with a Quasar/Vue frontend in `client/` and AW
 - Frontend quality checks: use `npm run lint` inside `client/` and `quasar build` to verify production output
 - Test scripts are Cypress UI launchers (`npm run testDev`, `npm run testStaging`)
 
+## Environment Variables (Lambda Secrets)
+
+- **Never** put backend secrets (Turso, Resend, Better Auth keys) in `client/.env` files. Those are for frontend-only config
+- Architect manages Lambda environment variables via the `arc env` CLI. See `ArchitectEnvironmentVariables.md` for the full command reference
+- Three environments: `testing` (local sandbox), `staging` (AWS SSM), `production` (AWS SSM)
+- `arc env` (no flags) prints all vars across all environments. `arc env -e <env>` prints vars for one environment
+- **Add a var**: `arc env --add --env <testing|staging|production> KEY "value"`
+- **Remove a var**: `arc env --remove --env <testing|staging|production> KEY`
+- For `testing`, vars are stored locally in `preferences.arc` (gitignored). For `staging`/`production`, vars are stored in AWS SSM Parameter Store
+- `ARC_APP_SECRET` must be set for session encoding (min 32 bytes). Reserved names: `ARC_ENV`, `ARC_APP_NAME`, `ARC_SESSION_TABLE_NAME`
+- Setup scripts: `node scripts/setup-env-testing.mjs`, `node scripts/setup-env-staging.mjs`, `node scripts/setup-env-production.mjs`
+
 ## Frontend Patterns
 
 - `client/src/boot/defaults.js` initializes WebSocket, registers global click tracker, exposes `window.store` for Cypress, and sends UI errors through Quasar `Notify` plus StellarTrack
 - Routing is split by layout in `client/src/router/routes.js`: public pages use `PublicLayout`, authenticated pages use `ProtectedLayout`, protected routes live under `/p` with `meta.requiresAuth`
 - Auth decisions happen in `client/src/router/index.js`, which calls `isAuthenticated()` on every navigation and emits page-view tracking
-- Pinia stores hold cross-page state. `client/src/stores/authStore.js` persists only refresh/session fields, not access/id tokens; don't assume the full Cognito session is durable across reloads
+- Pinia stores hold cross-page state. `client/src/stores/authStore.js` persists only essential session fields, not access tokens; don't assume the full session is durable across reloads
 - Quasar configured for static hosting in `client/quasar.config.js`: router mode is `hash`, `distDir` points to `../public/`, sourcemaps enabled, `Notify` is a first-class UI pattern
 
 ## WebSocket + Tracking
@@ -42,34 +54,37 @@ Full-stack serverless application with a Quasar/Vue frontend in `client/` and AW
 
 ### Source of Truth
 
-- Cognito is the source of truth for:
-  - privileged roles (`admin`, `super-admin`)
-  - sign-in eligibility (enabled/disabled)
-- DynamoDB user settings are application state and audit state. They are not the final authority for privileged access
+- Better Auth with Turso SQLite is the source of truth for:
+  - User identity (email, name, password hash)
+  - Roles (`user`, `admin`, `super-admin`, plus page-specific roles)
+  - Sign-in eligibility (enabled/disabled)
+- User data is stored in the `user` table in Turso — not in DynamoDB
 
 ### Role Management
 
+- Roles are stored as a JSON array in the `roles` column of the Turso `user` table
+- Every user gets `["user"]` on signup
 - Granting/revoking `admin` or `super-admin` must be done via backend admin APIs
-- Backend admin APIs must call Cognito admin operations (for example group membership APIs)
 - UI checks and route guards are convenience only. Every admin endpoint must enforce authorization server-side
 
 ### Disabling Users
 
-- Disabling a user from sign-in must call Cognito disable operations
-- App-table `disabled` flags can be written for UI and audit purposes
-- If possible, sign out active sessions after disable for immediate effect
+- Disabling a user sets `disabled = 1` in the Turso `user` table
+- The backend checks `disabled` on every authentication attempt
+- Audit fields `disabledAt` and `disabledBy` are written for tracking
 
 ### Template Bootstrap (New Site)
 
 - Each new site must bootstrap one initial `super-admin`
-- Preferred approach is a repeatable scripted flow (CLI/API), not ad hoc console edits
+- Use `node scripts/bootstrap-users.mjs [--env testing|staging|production]`
+- Default is `testing`. All environments read from `preferences.arc` (gitignored)
 - Bootstrap must be idempotent and auditable
 - After bootstrap, all admin grants should be done from app admin APIs
 
 ### Security Rules
 
 - Do not implement privileged auth based only on client-provided identity fields
-- Do not treat DynamoDB `isAdmin` style flags as authoritative
+- Do not treat client-side role flags as authoritative — always verify server-side
 - Keep audit context for admin mutations (`changedBy`, `changedAt`, correlation IDs)
 - Follow HTTP error logging standards (`logError`) on all admin APIs
 

@@ -9,14 +9,6 @@ import { stdin as input, stdout as output } from 'node:process'
 
 const ROOT_DIR = process.cwd()
 const CLIENT_DIR = path.join(ROOT_DIR, 'client')
-let awsSdk = null
-
-async function getAwsSdk() {
-  if (awsSdk) return awsSdk
-  const moduleRef = await import('aws-sdk')
-  awsSdk = moduleRef.default || moduleRef
-  return awsSdk
-}
 
 function fileExists(filePath) {
   return fs.existsSync(filePath)
@@ -227,11 +219,6 @@ function checkDevEnvironment() {
       args: ['-v']
     },
     {
-      label: 'AWS CLI',
-      command: 'aws',
-      args: ['--version']
-    },
-    {
       label: 'Architect CLI',
       command: 'npx',
       args: ['arc', '--version']
@@ -241,6 +228,11 @@ function checkDevEnvironment() {
       command: 'npx',
       args: ['quasar', '--version'],
       cwd: CLIENT_DIR
+    },
+    {
+      label: 'Turso CLI',
+      command: 'turso',
+      args: ['--version']
     }
   ]
 
@@ -267,147 +259,6 @@ function printEnvironmentResults(results) {
       : (item.stderr || item.stdout || 'not available').trim().split(/\r?\n/)[0]
     console.log(`  ${icon} ${item.label}: ${summary || 'ok'}`)
   }
-}
-
-async function getAwsCredentials(profile) {
-  const AWS = await getAwsSdk()
-  return new AWS.SharedIniFileCredentials({ profile })
-}
-
-async function createCognitoClient({ region, profile }) {
-  const AWS = await getAwsSdk()
-  const credentials = await getAwsCredentials(profile)
-  AWS.config.update({ region, credentials })
-  return new AWS.CognitoIdentityServiceProvider({ apiVersion: '2016-04-18', region, credentials })
-}
-
-async function ensureGroup(cognito, userPoolId, groupName, precedence) {
-  try {
-    await cognito.getGroup({
-      GroupName: groupName,
-      UserPoolId: userPoolId
-    }).promise()
-    return { created: false }
-  } catch (error) {
-    if (error.code !== 'ResourceNotFoundException') {
-      throw error
-    }
-  }
-
-  await cognito.createGroup({
-    GroupName: groupName,
-    UserPoolId: userPoolId,
-    Precedence: precedence
-  }).promise()
-
-  return { created: true }
-}
-
-async function ensureSuperAdminUser({
-  cognito,
-  userPoolId,
-  email,
-  givenName,
-  familyName,
-  displayName,
-  superAdminGroup,
-  tempPassword,
-  setPermanentPassword,
-  sendInviteEmail
-}) {
-  let userExists = true
-
-  try {
-    await cognito.adminGetUser({
-      UserPoolId: userPoolId,
-      Username: email
-    }).promise()
-  } catch (error) {
-    if (error.code === 'UserNotFoundException') {
-      userExists = false
-    } else {
-      throw error
-    }
-  }
-
-  if (!userExists) {
-    const userAttributes = [
-      { Name: 'email', Value: email },
-      { Name: 'email_verified', Value: 'true' }
-    ]
-
-    if (givenName) userAttributes.push({ Name: 'given_name', Value: givenName })
-    if (familyName) userAttributes.push({ Name: 'family_name', Value: familyName })
-    if (displayName) userAttributes.push({ Name: 'name', Value: displayName })
-
-    const createParams = {
-      UserPoolId: userPoolId,
-      Username: email,
-      UserAttributes: userAttributes,
-      DesiredDeliveryMediums: ['EMAIL']
-    }
-
-    if (!sendInviteEmail) {
-      createParams.MessageAction = 'SUPPRESS'
-    }
-
-    if (tempPassword) {
-      createParams.TemporaryPassword = tempPassword
-    }
-
-    await cognito.adminCreateUser(createParams).promise()
-
-    if (tempPassword && setPermanentPassword) {
-      await cognito.adminSetUserPassword({
-        UserPoolId: userPoolId,
-        Username: email,
-        Password: tempPassword,
-        Permanent: true
-      }).promise()
-    }
-  }
-
-  await cognito.adminAddUserToGroup({
-    UserPoolId: userPoolId,
-    Username: email,
-    GroupName: superAdminGroup
-  }).promise()
-
-  return { created: !userExists }
-}
-
-async function createUserPoolAndClient(cognito, { siteDisplayName, appClientName }) {
-  const pool = await cognito.createUserPool({
-    PoolName: `${siteDisplayName} Users`,
-    AutoVerifiedAttributes: ['email'],
-    UsernameAttributes: ['email'],
-    AdminCreateUserConfig: {
-      AllowAdminCreateUserOnly: true
-    }
-  }).promise()
-
-  const userPoolId = pool?.UserPool?.Id
-  if (!userPoolId) {
-    throw new Error('User pool was created but no UserPoolId was returned')
-  }
-
-  const client = await cognito.createUserPoolClient({
-    UserPoolId: userPoolId,
-    ClientName: appClientName,
-    GenerateSecret: false,
-    ExplicitAuthFlows: [
-      'ALLOW_USER_PASSWORD_AUTH',
-      'ALLOW_REFRESH_TOKEN_AUTH',
-      'ALLOW_ADMIN_USER_PASSWORD_AUTH'
-    ]
-  }).promise()
-
-  const userPoolClientId = client?.UserPoolClient?.ClientId
-  if (!userPoolClientId) {
-    throw new Error('User pool client was created but no ClientId was returned')
-  }
-
-  return { userPoolId, userPoolClientId }
 }
 
 function parseYesNo(inputValue, defaultValue) {
@@ -460,7 +311,7 @@ async function main() {
     const existingEnv = loadExistingEnvDefaults(envFilePaths)
 
     console.log('\nStellarNexus onboarding')
-    console.log('This script updates project metadata, verifies tooling, and configures Cognito bootstrap.\n')
+    console.log('This script updates project metadata, verifies tooling, and configures auth bootstrap.\n')
 
     const siteDisplayNameInput = await ask(rl, 'Site display name', clientPackage.productName || 'StellarNexus')
     const siteDisplayName = toDisplayName(siteDisplayNameInput)
@@ -483,76 +334,49 @@ async function main() {
       printEnvironmentResults(environmentResults)
     }
 
-    let userPoolId = ''
-    let userPoolClientId = ''
-    const configureCognito = await askYesNo(rl, 'Configure Cognito bootstrap now?', true)
-    const superAdminGroup = await ask(rl, 'Super-admin group name', existingEnv.GLOBAL_ADMIN_GROUP || 'super-admin')
-    const adminGroup = await ask(rl, 'Admin group name', existingEnv.SITE_ADMIN_GROUP || 'admin')
+    console.log('\nAuthentication setup (Better Auth + Turso SQLite)')
+    console.log('You will need:')
+    console.log('  - Turso database URL and auth token (create at https://turso.tech)')
+    console.log('  - Resend API key for email delivery (create at https://resend.com)')
 
-    if (configureCognito) {
-      const useExistingPool = await askYesNo(rl, 'Use an existing Cognito user pool?', true)
-      const cognito = await createCognitoClient({ region: awsRegion, profile: awsProfile })
+    const configureAuth = await askYesNo(rl, 'Configure authentication now?', true)
 
-      if (useExistingPool) {
-        userPoolId = await ask(rl, 'Existing Cognito User Pool ID')
-        userPoolClientId = await ask(rl, 'Existing Cognito App Client ID')
-      } else {
-        const appClientName = await ask(rl, 'New app client name', `${siteDisplayName} Web App`)
-        const created = await createUserPoolAndClient(cognito, { siteDisplayName, appClientName })
-        userPoolId = created.userPoolId
-        userPoolClientId = created.userPoolClientId
-        console.log(`\nCreated user pool: ${userPoolId}`)
-        console.log(`Created app client: ${userPoolClientId}`)
+    let tursoDatabaseUrl = ''
+    let tursoAuthToken = ''
+    let resendApiKey = ''
+
+    if (configureAuth) {
+      tursoDatabaseUrl = await ask(rl, 'Turso database URL', existingEnv.TURSO_DATABASE_URL || '')
+      tursoAuthToken = await ask(rl, 'Turso auth token', existingEnv.TURSO_AUTH_TOKEN || '')
+      resendApiKey = await ask(rl, 'Resend API key', existingEnv.RESEND_API_KEY || '')
+
+      if (!tursoDatabaseUrl || !tursoAuthToken) {
+        console.log('\n⚠ Turso credentials are required for authentication to work.')
+        console.log('Create a database at https://turso.tech and get your URL and token.')
+        console.log('Run: turso db create stellar-nexus-dev')
       }
 
-      if (!userPoolId || !userPoolClientId) {
-        throw new Error('Cognito setup requires both a User Pool ID and App Client ID')
+      if (!resendApiKey) {
+        console.log('\n⚠ Resend API key is required for email verification.')
+        console.log('Sign up at https://resend.com and get your API key.')
       }
 
-      const groupSuperResult = await ensureGroup(cognito, userPoolId, superAdminGroup, 1)
-      const groupAdminResult = await ensureGroup(cognito, userPoolId, adminGroup, 5)
-
-      console.log(`\nGroup ${superAdminGroup}: ${groupSuperResult.created ? 'created' : 'already exists'}`)
-      console.log(`Group ${adminGroup}: ${groupAdminResult.created ? 'created' : 'already exists'}`)
-
-      const createSuperAdmin = await askYesNo(rl, 'Create or update initial super-admin user now?', true)
-      if (createSuperAdmin) {
+      const bootstrapSuperAdmin = await askYesNo(rl, 'Bootstrap initial super-admin user after setup?', true)
+      if (bootstrapSuperAdmin && tursoDatabaseUrl && tursoAuthToken) {
         const superAdminEmail = await ask(rl, 'Super-admin email')
-        const givenName = await ask(rl, 'Super-admin given name', '')
-        const familyName = await ask(rl, 'Super-admin family name', '')
-        const fullNameDefault = `${givenName} ${familyName}`.trim()
-        const displayName = await ask(rl, 'Super-admin display name', fullNameDefault)
+        const superAdminName = await ask(rl, 'Super-admin name', '')
+        const superAdminPassword = await ask(rl, 'Super-admin password', '')
 
-        const setPasswordNow = await askYesNo(rl, 'Set an initial password now?', false)
-        let tempPassword = ''
-        let setPermanentPassword = false
-
-        if (setPasswordNow) {
-          tempPassword = await ask(rl, 'Initial password (must satisfy Cognito policy)')
-          setPermanentPassword = await askYesNo(rl, 'Mark this password as permanent?', true)
+        if (superAdminEmail && superAdminPassword) {
+          console.log('\nTo bootstrap the super-admin, run:')
+          console.log(`  TURSO_DATABASE_URL=${tursoDatabaseUrl} TURSO_AUTH_TOKEN=${tursoAuthToken} node scripts/bootstrap-users.mjs`)
+          console.log('Then follow the prompts to create the initial user.')
         }
-
-        const sendInviteEmail = await askYesNo(rl, 'Send Cognito invitation email?', true)
-
-        const userResult = await ensureSuperAdminUser({
-          cognito,
-          userPoolId,
-          email: superAdminEmail,
-          givenName,
-          familyName,
-          displayName,
-          superAdminGroup,
-          tempPassword,
-          setPermanentPassword,
-          sendInviteEmail
-        })
-
-        console.log(`Super-admin user ${userResult.created ? 'created' : 'already existed'} and ensured in ${superAdminGroup}`)
       }
     } else {
-      // Preserve existing env values when Cognito setup is skipped.
-      userPoolId = existingEnv.COGNITO_USER_POOL_ID || ''
-      userPoolClientId = existingEnv.COGNITO_CLIENT_ID || ''
+      tursoDatabaseUrl = existingEnv.TURSO_DATABASE_URL || ''
+      tursoAuthToken = existingEnv.TURSO_AUTH_TOKEN || ''
+      resendApiKey = existingEnv.RESEND_API_KEY || ''
     }
 
     const normalizedArcName = toSnakeCase(appArcName)
@@ -611,16 +435,14 @@ async function main() {
     const envVars = {
       APP_NAME: siteDisplayName.replace(/\s+/g, ''),
       APP_DISPLAY_NAME: siteDisplayName,
-      COGNITO_USER_POOL_ID: userPoolId || existingEnv.COGNITO_USER_POOL_ID || '',
-      COGNITO_CLIENT_ID: userPoolClientId || existingEnv.COGNITO_CLIENT_ID || '',
-      GLOBAL_ADMIN_GROUP: superAdminGroup,
-      SITE_ADMIN_GROUP: adminGroup
+      TURSO_DATABASE_URL: tursoDatabaseUrl,
+      TURSO_AUTH_TOKEN: tursoAuthToken,
+      RESEND_API_KEY: resendApiKey
     }
 
     const templateEnvPath = path.join(CLIENT_DIR, '.env.template')
     const runtimeEnvPath = path.join(CLIENT_DIR, '.env')
     if (!fileExists(runtimeEnvPath) && fileExists(templateEnvPath)) {
-      // Ensure client/.env exists for local development.
       writeText(runtimeEnvPath, readText(templateEnvPath))
     }
 

@@ -1,7 +1,7 @@
 import arc from '@architect/functions'
 import { logError } from '@architect/shared/stellarErrorLogger.mjs'
 import { requireAuthenticatedIdentity } from '@architect/shared/adminAuth.mjs'
-import { mapUserForPicker } from '@architect/shared/userMaintenance.mjs'
+import { searchUsers, mapUserForPicker } from '@architect/shared/userMaintenance.mjs'
 
 function buildJsonResponse (statusCode, payload) {
   return {
@@ -12,33 +12,17 @@ function buildJsonResponse (statusCode, payload) {
   }
 }
 
-async function searchUsers (req, context) {
+async function searchUsersHandler (req, context) {
   try {
-    requireAuthenticatedIdentity(req)
-    const search = String(req?.queryStringParameters?.search || '').trim().toLowerCase()
+    await requireAuthenticatedIdentity(req)
+    const search = String(req?.queryStringParameters?.search || '').trim()
 
-    const db = await arc.tables()
-    const usersTable = db.users
-    const result = await usersTable.scan({
-      FilterExpression: 'begins_with(pk, :userPrefix) AND sk = :profileSk',
-      ExpressionAttributeValues: {
-        ':userPrefix': 'USER#',
-        ':profileSk': 'PROFILE'
-      }
-    })
-
-    const users = (result.Items || [])
+    const users = await searchUsers(search, 20)
+    const mappedUsers = users
       .filter((item) => !item.disabled)
-      .filter((item) => {
-        if (!search) return true
-        const email = String(item.email || '').toLowerCase()
-        const displayName = String(item.displayName || '').toLowerCase()
-        return email.includes(search) || displayName.includes(search)
-      })
       .map(mapUserForPicker)
-      .slice(0, 20)
 
-    return buildJsonResponse(200, { users })
+    return buildJsonResponse(200, { users: mappedUsers })
   } catch (error) {
     const statusCode = Number.isInteger(error?.statusCode) ? error.statusCode : 500
     if (statusCode !== 500) {
@@ -53,4 +37,4 @@ async function searchUsers (req, context) {
   }
 }
 
-export const handler = arc.http(searchUsers)
+export const handler = arc.http(searchUsersHandler)
